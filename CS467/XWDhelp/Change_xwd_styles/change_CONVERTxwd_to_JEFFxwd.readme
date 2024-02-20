@@ -1,0 +1,31 @@
+
+
+      
+1.    earth.png  is just a png file from the internet
+2.    convert  earth.png  earth.xwd
+3.    change_CONVERTxwd_to_JEFFxwd.exec   earth.xwd  earthJ.xwd
+4.    frame_it.exe   earthJ.xwd   earthJFrame.xwd   30  1 0 1
+
+      step 4 shows that your other tools that expect the jeff xwd style
+      can indeed operate on the file produced by the change... program.
+
+//-----------------------------------------------------------------
+
+The file clouds.jpg presented a bit of a problem because it was
+grey scale and convert created a different style of xwd
+for it that your change program did not correctly deal with.
+
+The fix is to
+
+    convert  -colorspace rgb   clouds.jpg   clouds.xwd
+
+then
+
+    change_CONVERTxwd_to_JEFFxwd.exec   clouds.xwd  cloudsJ.xwd
+
+then, to show that it is a "J" compatible file,
+
+    reduce_xwds.exe   cloudsJ.xwd   cloudsJreduced.xwd   5
+
+
+
