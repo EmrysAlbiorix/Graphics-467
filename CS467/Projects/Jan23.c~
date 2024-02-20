@@ -1,0 +1,37 @@
+#include "Tools/FPToolkit.c"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+int S_WIDTH, S_HEIGHT ;
+
+
+int main() {
+  // Initializes the screen
+  S_WIDTH = 800 ; S_HEIGHT = 800 ;
+  G_init_graphics(S_WIDTH, S_HEIGHT) ;
+  G_rgb(0, 0, 0) ;
+  G_clear() ;
+
+  // Draws the circle
+  G_rgb(0, 1, 0) ;
+  G_circle(400, 400, 300) ;
+
+  // Calculate the width and height of rectangle
+  int p = 300/(sqrt(2)) ;
+  int w = 2*p ;
+
+  // Draws the rectangle
+  G_rectangle(400-p, 400-p, w, w) ;
+
+  // Draws another circle
+  int n = 300 - p ;
+  G_circle(400, 400, 300-n) ;
+
+  // Draws another rectangle
+  int m = (300-p)/(sqrt(2)) ;
+  G_rectangle(400-n, 400-n, 2*m, 2*m) ;
+
+  // Shows screen until key is pressed
+  G_wait_key() ;
+}
