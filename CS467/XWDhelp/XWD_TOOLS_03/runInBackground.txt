@@ -1,0 +1,2 @@
+To run something in the background even while logged out:
+	nohup ./a.out &
