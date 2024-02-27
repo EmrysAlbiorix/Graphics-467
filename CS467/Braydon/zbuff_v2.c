@@ -3,6 +3,7 @@
 
 
 //double x[10000],y[10000],z[10000];
+double zbuffer[800][800];
 double eye[3],coi[0],up[3];
 int np;
 
@@ -15,7 +16,6 @@ double AMBIENT      = 0.2 ;
 double MAX_DIFFUSE  = 0.5 ;
 double SPECPOW      = 50 ;
 double inherent_rgb[3];
-
 
 
 int Light_Model (double irgb[3],
@@ -172,7 +172,7 @@ double dist(double *point) {
 }
 
 
-int plot (double (*f)(double u, double v), double (*g)(double u, double v), double (*l)(double u, double v), double ulo, double uhi,double vlo, double vhi) {
+int plot (double (*f)(double u, double v), double (*g)(double u, double v), double (*l)(double u, double v), double ulo, double uhi,double vlo, double vhi,double MOVEMENT[4][4]) {
 	
 	double Tvlist[100];
 	int Ttypelist[100],Tn;
@@ -180,19 +180,32 @@ int plot (double (*f)(double u, double v), double (*g)(double u, double v), doub
 	double E[4][4],Ei[4][4];
 	
 	//movement sequence for RED sphere.
+	M3d_make_identity(RED);
 	Tn = 0; 
 	//Ttypelist[Tn] = SY ; Tvlist[Tn] =   0.7 ; Tn++;
   	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   5; Tn++;
 	M3d_make_movement_sequence_matrix(V,Vi,Tn,Ttypelist,Tvlist);
 	//M3d_view(E,Ei,eye,coi,up);
+	M3d_mat_mult(RED,RED,V);
+	
+	
+	//movement sequence for BLUE sphere.
+	M3d_make_identity(BLUE);
+	Tn = 0; 
+	//Ttypelist[Tn] = SY ; Tvlist[Tn] =   0.7 ; Tn++;
+  	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   5; Tn++;
+  	Ttypelist[Tn] = TY ; Tvlist[Tn] =   0.5; Tn++;
+	M3d_make_movement_sequence_matrix(V,Vi,Tn,Ttypelist,Tvlist);
+	//M3d_view(E,Ei,eye,coi,up);
+	M3d_mat_mult(BLUE,BLUE,V);
 	
 	
 	double u,v;
-	int i=0;
+	int j,k,i;
 	double xbb,ybb,x,y,z;
 	double halfangle;
 	double H;
-	double point[3],point2[3],point3[3],rgb[3],zbuffer[800][800];
+	double point[3],point2[3],point3[3],rgb[3];
 	double pointdist,temp;
 	int a,b;
 	
@@ -214,33 +227,31 @@ int plot (double (*f)(double u, double v), double (*g)(double u, double v), doub
    		point3[1]=g(u,v+0.01);
    		point3[2]=l(u,v+0.01);
    		
-   		M3d_mat_mult_pt(point,V,point);
-   		M3d_mat_mult_pt(point2,V,point2);
-   		M3d_mat_mult_pt(point3,V,point3);
+   		M3d_mat_mult_pt(point,MOVEMENT,point);
+   		M3d_mat_mult_pt(point2,MOVEMENT,point2);
+   		M3d_mat_mult_pt(point3,MOVEMENT,point3);
    		x=point[0];
    		y=point[1];
    		z=point[2];
    		xbb=((400/H)*(x/z)+400);
-		ybb=((400/H)*(y/z)+400);
-		
-		
-		temp=dist(point);
-		if(pointdist>temp) {
-			pointdist=pointdist;
-		} else {
-			pointdist=temp;
+			ybb=((400/H)*(y/z)+400);
+			
+		//zbuffer
+		a=xbb;
+		b=ybb;
+		pointdist=z;
+		if(pointdist<zbuffer[a][b]) {
+			zbuffer[a][b]=pointdist;
+			light_model (inherent_rgb,point,point2,point3,rgb);
+			G_rgb(rgb[0], rgb[1], rgb[2]);
+			G_point(xbb,ybb);
+		} else if (pointdist>zbuffer[a][b]) {
+			zbuffer[a][b]=zbuffer[a][b];
 		}
-		
-		a=x/z;
-		b=y/z;
-		zbuffer[a][b]=pointdist;
-		
-		light_model (inherent_rgb,point,point2,point3,rgb);
-		G_rgb(rgb[0], rgb[1], rgb[2]);
-		G_point(xbb,ybb);
    		i++;
     	}		
   	}
+		
   	return i;
 }
 
@@ -259,11 +270,12 @@ double sphere_z(double u,double v) {
 }
 
 int main() {
+	int k,j;
 	double u;
 	double normal[2],mag;
-	light_in_eye_space[0] =  10 ;
+	light_in_eye_space[0] =  -10 ;
   	light_in_eye_space[1] =  10 ;
-  	light_in_eye_space[2] =  0 ;
+  	light_in_eye_space[2] =  -10 ;
   
   	AMBIENT = 0.2 ;
   	MAX_DIFFUSE = 0.5 ;
@@ -275,13 +287,24 @@ int main() {
 	G_rgb(0.1,0.1,0.1);
 	G_clear();
 	
+	//initialize zbuffer
+	for(j=0;j<800;j++) {
+		for(k=0;k<800;k++) {
+			zbuffer[j][k]=100000;
+		}
+	}
+	
 	inherent_rgb[0]=1;
 	inherent_rgb[1]=0;
 	inherent_rgb[2]=0;
 	
 	//initialize points for sphere
-	np=plot(sphere_x,sphere_y,sphere_z,-1*M_PI,M_PI,-1*M_PI/2,M_PI/2);
+	np=plot(sphere_x,sphere_y,sphere_z,-1*M_PI,M_PI,-1*M_PI/2,M_PI/2,RED);
 	
+	inherent_rgb[0]=0;
+	inherent_rgb[1]=0;
+	inherent_rgb[2]=1;
+	np=plot(sphere_x,sphere_y,sphere_z,-1*M_PI,M_PI,-1*M_PI/2,M_PI/2,BLUE);
 	
 	//wait for user to click key and end program.
 	G_wait_key();
