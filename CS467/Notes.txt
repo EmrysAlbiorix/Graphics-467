@@ -1,0 +1,22 @@
+Notes from class on ReTracing:
+
+- Intersect a ray with all obj
+- Find closest point
+- Do Light Model
+- Color pixel
+- Go to next pixel ray
+
+Reflection is doable
+Refraction is doable
+
+Final Project Idea (Maze with mirror to look behind)
+
+For solving the 2d_Simple:
+- Work backwards on the inverse of the shape
+
+(x)   (a)      (c-a)
+    =	  + t*
+(y)   (b)      (d-b)
+
+We want the smallest positive t value
+-t is behind view, non-real t means doesn't intersect
