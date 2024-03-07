@@ -216,8 +216,9 @@ int test01()
 	intersect[1]=RsourceT[1]+t*(RtipT[1]-RsourceT[1]);
 	M3d_mat_mult_pt(intersect,obmat[0],intersect);
 	
-    G_rgb(0,1,0);
-	//G_line(Rsource[0],Rsource[1],intersect[0],intersect[1]);
+	//Draws Lines
+    	G_rgb(0,1,0);
+	G_line(Rsource[0],Rsource[1],intersect[0],intersect[1]);
 	if(t>0) {
 		G_rgb(color[0][0],color[0][1],color[0][2]);
 		G_fill_circle(Rtip[0],Rtip[1],1);
