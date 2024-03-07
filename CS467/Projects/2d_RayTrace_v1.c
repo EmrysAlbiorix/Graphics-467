@@ -206,6 +206,7 @@ int test01() {
   double RsourceT[3], RtipT[3];
   int objnum;
 
+  // Draws the lines
   for (ytip = 200; ytip <= 600; ytip++) {
     Rtip[0] = 100;
     Rtip[1] = ytip;
@@ -248,7 +249,7 @@ int test01() {
     intersect[1] = RsourceT[1] + t * (RtipT[1] - RsourceT[1]);
     M3d_mat_mult_pt(intersect, obmat[0], intersect);
 
-    // Draws Lines
+    // Fills color
     G_rgb(0, 1, 0);
     G_line(Rsource[0], Rsource[1], intersect[0], intersect[1]);
     if (t > 0) {
@@ -261,7 +262,8 @@ int test01() {
 
   G_rgb(1, 1, 1);
   G_draw_string("'q' to quit", 50, 50);
-  while (G_wait_key() != 'q');
+  while (G_wait_key() != 'q')
+    ;
   G_save_image_to_file("2d_Simple_Raytracer.xwd");
 }
 
