@@ -513,6 +513,7 @@ int main() {
 	double EARTHobj[4][4],TORUSobj[4][4],TORUS2obj[4][4],CYLobj[4][4],CYL2obj[4][4],BCYLobj[4][4],BCYL2obj[4][4];
 	
 	//for movie, while less than 50
+	fnum=0;
 	while (q != 'q') {
 	  	init_zbuffer();
 
