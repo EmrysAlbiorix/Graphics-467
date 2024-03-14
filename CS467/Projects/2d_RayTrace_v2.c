@@ -78,7 +78,8 @@ int rayThing(double Rsource[], double Rtip[]) {
   // Stores the temporary distances and color
   double xBuff[3] ;
   xBuff[0] = -1 ;
-  double* tempRGB ;
+  //double* tempRGB ;
+  int RGBnum ;
 
   // Transform the ray endpoints into object-local coordinates for each object
   double RsourceT[3], RtipT[3];
@@ -114,7 +115,8 @@ int rayThing(double Rsource[], double Rtip[]) {
         xBuff[2] = intersect[2] ;
         
         // Saves the correct color
-        tempRGB = (double[3]){color[objnum][0],color[objnum][1],color[objnum][2]} ;
+        //tempRGB = (double[3]){color[objnum][0],color[objnum][1],color[objnum][2]} ;
+        RGBnum = objnum ;
       }
     }
   }
@@ -125,9 +127,12 @@ int rayThing(double Rsource[], double Rtip[]) {
   }
   
   // Does the drawing
-  G_rgb(tempRGB[0], tempRGB[1], tempRGB[2]);
-  G_line(Rsource[0], Rsource[1], xBuff[0], xBuff[1]);
-  G_fill_circle(Rtip[0], Rtip[1], 1); // Mark the ray tip
+  //G_rgb(tempRGB[0], tempRGB[1], tempRGB[2]) ; // Shape color
+  G_rgb(color[RGBnum][0], color[RGBnum][1], color[RGBnum][2]) ; // Shape color
+  G_fill_circle(Rtip[0], Rtip[1], 1) ; // Mark the ray tip
+  G_line(Rsource[0], Rsource[1], Rtip[0], Rtip[1]) ; // Inner Line
+  G_rgb(.8, .8, .8) ;
+  G_line(Rtip[0], Rtip[1], xBuff[0], xBuff[1]) ; // Outer Line
 }
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
