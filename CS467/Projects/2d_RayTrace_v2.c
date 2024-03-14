@@ -67,8 +67,18 @@ double quadratic_solve(double a, double b, double c) {
 //////////////////////////////////////////////////////////////
 // Finds the normal vector
 //////////////////////////////////////////////////////////////
-int getNormal() {
+int getNormal(int objnum, double normal[], double intersect[]) {
+  normal[0] = 
+  normal[1] = M3d_mat_mult_pt(intersect, obinv[objnum], intersect) ;
+  normal[2] = 0 ;
 
+  /*
+  normal[0] = 2*intersect[0] ;
+  normal[1] = 2*intersect[1] ;
+  normal[2] = 0 ;
+  normal[0] = obinv[objnum][0][0] * normal[0] + obinv[objnum][1][0] * normal[1] ;
+  normal[1] = obinv[objnum][0][1] * normal[0] + obinv[objnum][1][1] * normal[1] ;
+  */
 }
 
 //////////////////////////////////////////////////////////////
@@ -77,35 +87,39 @@ int getNormal() {
 int rayThing(double Rsource[], double Rtip[]) {
   // Stores the temporary distances and color
   double xBuff[3] ;
+  double normal[3] ;
   xBuff[0] = -1 ;
   //double* tempRGB ;
   int RGBnum ;
 
   // Transform the ray endpoints into object-local coordinates for each object
-  double RsourceT[3], RtipT[3];
+  double RsourceT[3], RtipT[3] ;
   for (int objnum = 0; objnum < num_objects; objnum++) {
     // Transform the ray source and tip into object-local coordinates
-    M3d_mat_mult_pt(RsourceT, obinv[objnum], Rsource);
-    M3d_mat_mult_pt(RtipT, obinv[objnum], Rtip);
+    M3d_mat_mult_pt(RsourceT, obinv[objnum], Rsource) ;
+    M3d_mat_mult_pt(RtipT, obinv[objnum], Rtip) ;
 
     // Calculate coefficients of the quadratic equation for the object
     double A, B, C;
     A = (RtipT[0] - RsourceT[0]) * (RtipT[0] - RsourceT[0]) +
-        (RtipT[1] - RsourceT[1]) * (RtipT[1] - RsourceT[1]);
+        (RtipT[1] - RsourceT[1]) * (RtipT[1] - RsourceT[1]) ;
     B = 2 * RsourceT[0] * (RtipT[0] - RsourceT[0]) +
-        2 * RsourceT[1] * (RtipT[1] - RsourceT[1]);
-    C = (RsourceT[1] * RsourceT[1]) + (RsourceT[0] * RsourceT[0]) - 1;
+        2 * RsourceT[1] * (RtipT[1] - RsourceT[1]) ;
+    C = (RsourceT[1] * RsourceT[1]) + (RsourceT[0] * RsourceT[0]) - 1 ;
 
     // Solve the quadratic equation for finding the intersections of the ray
-    double t = quadratic_solve(A, B, C);
+    double t = quadratic_solve(A, B, C) ;
 
     // Calculate the intersection point in object-local coordinates
-    double intersect[3];
-    intersect[0] = RsourceT[0] + t * (RtipT[0] - RsourceT[0]);
-    intersect[1] = RsourceT[1] + t * (RtipT[1] - RsourceT[1]);
+    double intersect[3] ;
+    intersect[0] = RsourceT[0] + t * (RtipT[0] - RsourceT[0]) ;
+    intersect[1] = RsourceT[1] + t * (RtipT[1] - RsourceT[1]) ;
 
     // Transform the intersection point back to world coordinates
-    M3d_mat_mult_pt(intersect, obmat[objnum], intersect);
+    M3d_mat_mult_pt(intersect, obmat[objnum], intersect) ;
+    
+    // Find Normal
+    getNormal(objnum, normal, intersect) ;
 
     // Saves the point that is closer to filter if intersects with objects
     if (t > 0) {
@@ -133,6 +147,7 @@ int rayThing(double Rsource[], double Rtip[]) {
   G_line(Rsource[0], Rsource[1], Rtip[0], Rtip[1]) ; // Inner Line
   G_rgb(.8, .8, .8) ;
   G_line(Rtip[0], Rtip[1], xBuff[0], xBuff[1]) ; // Outer Line
+  G_line(xBuff[0], xBuff[1], normal[0], normal[1]) ; // Draws the Normal Vector
 }
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
