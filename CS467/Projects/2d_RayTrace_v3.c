@@ -64,13 +64,43 @@ double quadratic_solve(double a, double b, double c) {
   // If both values are not positive or if none is lower, no value is returned
 }
 
+// Sets a standard length of scale
+void normalizeVector(double v[], double res[], double scale){
+  double magnitude = sqrt(v[0] * v[0] + v[1] * v[1]);
+  
+  res[0] = v[0]/magnitude * scale ;
+  res[1] = v[1]/magnitude * scale ;
+   
+}
+
 //////////////////////////////////////////////////////////////
 // Finds the normal vector
 //////////////////////////////////////////////////////////////
 void getNormal(int objnum, double normal[], double intersect[]) {
+  // Moves back to obj-space
+  double intersectObjSpace[3];
+  M3d_mat_mult_pt(intersectObjSpace, obinv[objnum], intersect) ;
   
-}
+  // Calculate the normal vector in object-local coordinates
+  //printf("%d, \t %lf, %lf\n", objnum, intersect[0], intersect[1]) ;
+  normal[0] = 2 * intersectObjSpace[0];
+  normal[1] = 2 * intersectObjSpace[1];
+  normal[2] = 0;
+  
+  // Transoposes the shit
+  double transpose[4][4] = {
+  	obinv[objnum][0][0], obinv[objnum][1][0], obinv[objnum][2][0], 0,
+  	obinv[objnum][0][1], obinv[objnum][1][1], obinv[objnum][2][1], 0,
+  	obinv[objnum][0][2], obinv[objnum][1][2], obinv[objnum][2][2], 0,
+  	0, 0, 0, 0} ;
 
+  // Math
+  M3d_mat_mult_pt(normal, transpose, normal) ;
+  //printf("Normal: %lf, %lf\n", normal[0], normal[1]) ;
+
+  // Normalizes
+  normalizeVector(normal, normal, 25) ;
+}
 
 
 //////////////////////////////////////////////////////////////
@@ -106,9 +136,6 @@ int rayThing(double Rsource[], double Rtip[]) {
     double intersect[3] ;
     intersect[0] = RsourceT[0] + t * (RtipT[0] - RsourceT[0]) ;
     intersect[1] = RsourceT[1] + t * (RtipT[1] - RsourceT[1]) ;
-    
-    // Find Normal
-    //getNormal(objnum, normal, intersect) ;
 
     // Transform the intersection point back to world coordinates
     M3d_mat_mult_pt(intersect, obmat[objnum], intersect) ;
@@ -132,6 +159,9 @@ int rayThing(double Rsource[], double Rtip[]) {
     return 0 ;
   }
   
+  // Find Normal
+  getNormal(RGBnum, normal, xBuff) ;
+  
   // Does the drawing
   //G_rgb(tempRGB[0], tempRGB[1], tempRGB[2]) ; // Shape color
   G_rgb(color[RGBnum][0], color[RGBnum][1], color[RGBnum][2]) ; // Shape color
@@ -139,7 +169,10 @@ int rayThing(double Rsource[], double Rtip[]) {
   G_line(Rsource[0], Rsource[1], Rtip[0], Rtip[1]) ; // Inner Line
   G_rgb(.8, .8, .8) ;
   G_line(Rtip[0], Rtip[1], xBuff[0], xBuff[1]) ; // Outer Line
-  //G_line(xBuff[0], xBuff[1], normal[0], normal[1]) ; // Draws the Normal Vector
+  G_line(xBuff[0], xBuff[1], xBuff[0] + normal[0], xBuff[1] + normal[1]) ; // Draws the Normal Vector
+  
+  //printf("xBuff: %lf, %lf\n", xBuff[0], xBuff[1]) ;
+  //printf("xBuff+Normal: %lf, %lf\n\n", xBuff[0] + normal[0], xBuff[1] + normal[1]) ;
 }
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
