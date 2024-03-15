@@ -67,19 +67,31 @@ double quadratic_solve(double a, double b, double c) {
 //////////////////////////////////////////////////////////////
 // Finds the normal vector
 //////////////////////////////////////////////////////////////
-int getNormal(int objnum, double normal[], double intersect[]) {
-  normal[0] = 
-  normal[1] = M3d_mat_mult_pt(intersect, obinv[objnum], intersect) ;
-  normal[2] = 0 ;
+void getNormal(int objnum, double normal[], double intersect[]) {
+  // Calculate the normal vector in object-local coordinates
+  normal[0] = 2 * intersect[0];
+  normal[1] = 2 * intersect[1];
+  normal[2] = 0;
 
-  /*
-  normal[0] = 2*intersect[0] ;
-  normal[1] = 2*intersect[1] ;
-  normal[2] = 0 ;
-  normal[0] = obinv[objnum][0][0] * normal[0] + obinv[objnum][1][0] * normal[1] ;
-  normal[1] = obinv[objnum][0][1] * normal[0] + obinv[objnum][1][1] * normal[1] ;
-  */
+  // Transform the normal vector to world coordinates
+  double temp_normal[3];
+  temp_normal[0] = obinv[objnum][0][0] * normal[0] + obinv[objnum][1][0] * normal[1];
+  temp_normal[1] = obinv[objnum][0][1] * normal[0] + obinv[objnum][1][1] * normal[1];
+  temp_normal[2] = 0; // Since the normal vector lies in the xy-plane of the object
+
+  // Rotate the normal vector by the inverse transpose of the object's rotation matrix to correct for non-uniform scaling
+  double inv_transpose[4][4];
+  M3d_mat_mult(inv_transpose, obinv[objnum], obinv[objnum]); // Calculate inverse transpose
+
+  // Apply the inverse transpose to the normal vector
+  double temp_result[3];
+  M3d_mat_mult_pt(temp_result, inv_transpose, temp_normal);
+  normal[0] = temp_result[0];
+  normal[1] = temp_result[1];
+  normal[2] = temp_result[2];
 }
+
+
 
 //////////////////////////////////////////////////////////////
 // Does the actual RayTracing shit
@@ -114,12 +126,12 @@ int rayThing(double Rsource[], double Rtip[]) {
     double intersect[3] ;
     intersect[0] = RsourceT[0] + t * (RtipT[0] - RsourceT[0]) ;
     intersect[1] = RsourceT[1] + t * (RtipT[1] - RsourceT[1]) ;
-
-    // Transform the intersection point back to world coordinates
-    M3d_mat_mult_pt(intersect, obmat[objnum], intersect) ;
     
     // Find Normal
     getNormal(objnum, normal, intersect) ;
+
+    // Transform the intersection point back to world coordinates
+    M3d_mat_mult_pt(intersect, obmat[objnum], intersect) ;
 
     // Saves the point that is closer to filter if intersects with objects
     if (t > 0) {
