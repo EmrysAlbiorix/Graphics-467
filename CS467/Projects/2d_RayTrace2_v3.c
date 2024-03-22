@@ -181,6 +181,37 @@ void getNormal(int objnum, double normal[], double intersect[]) {
   // Normalizes
   normalizeVector(normal, normal, 25) ;
 }
+
+//////////////////////////////////////////////////////////////
+// Finds Reflection Vector
+//////////////////////////////////////////////////////////////
+void getReflect(double normal[], double incoming[], double reflection[]) {
+    // Normalize the incoming ray direction
+    double incomingMagnitude = sqrt(incoming[0] * incoming[0] + incoming[1] * incoming[1] + incoming[2] * incoming[2]);
+    double normalizedIncoming[3] = {incoming[0] / incomingMagnitude, incoming[1] / incomingMagnitude, incoming[2] / incomingMagnitude};
+
+    // Calculate dot product of normal and incoming ray direction
+    double dotProduct = 2 * (normalizedIncoming[0] * normal[0] + normalizedIncoming[1] * normal[1] + normalizedIncoming[2] * normal[2]);
+
+    // Calculate reflection vector using normalized incoming ray direction and surface normal
+    reflection[0] = normalizedIncoming[0] - dotProduct * normal[0];
+    reflection[1] = normalizedIncoming[1] - dotProduct * normal[1];
+    reflection[2] = normalizedIncoming[2] - dotProduct * normal[2];
+
+    // Ensure the reflection vector is normalized
+    double reflectionMagnitude = sqrt(reflection[0] * reflection[0] + reflection[1] * reflection[1] + reflection[2] * reflection[2]);
+    if (reflectionMagnitude > 0) {
+        reflection[0] /= reflectionMagnitude;
+        reflection[1] /= reflectionMagnitude;
+        reflection[2] /= reflectionMagnitude;
+    }
+}
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
@@ -233,8 +264,6 @@ int rayThing(double Rsource[], double Rtip[]) {
     } else if (obtype[objnum] == 1) { // circle
       t = quadratic_solve(A, B, C) ;
     } else if (obtype[objnum] == 2) { // hyperbola
-    
-    /* Braydon's shit */
       double trunkY1 = 0, trunkY2 = 0 ;
       //hyper_solve(A,B,C,t1,t2);
       //t1 = (-B + sqrt((B * B) - 4 * A * C)) / (2 * A) ;
@@ -290,6 +319,16 @@ int rayThing(double Rsource[], double Rtip[]) {
   
   // Find Normal
   getNormal(RGBnum, normal, xBuff) ;
+  
+  // Define the incoming ray direction
+  double incoming[3] = {Rtip[0] - Rsource[0], Rtip[1] - Rsource[1], Rtip[2] - Rsource[2]};
+  
+  // Calculate reflection vector
+  double reflection[3];
+  getReflect(normal, incoming, reflection);
+  
+  // Normalize reflection vector
+  normalizeVector(reflection, reflection, 15) ;
 
   
   // Does the drawing
@@ -297,8 +336,10 @@ int rayThing(double Rsource[], double Rtip[]) {
   G_fill_circle(Rtip[0], Rtip[1], 1) ; // Mark the ray tip
   G_line(Rsource[0], Rsource[1], Rtip[0], Rtip[1]) ; // Inner Line
   G_rgb(.8, .8, .8) ;
-  G_line(Rtip[0], Rtip[1], xBuff[0], xBuff[1]) ; // Outer Line
+  //G_line(Rtip[0], Rtip[1], xBuff[0], xBuff[1]) ; // Outer Line
   G_line(xBuff[0], xBuff[1], xBuff[0] + normal[0], xBuff[1] + normal[1]) ; // Draws the Normal Vector
+  G_rgb(1, 0, 0) ;
+  G_line(xBuff[0], xBuff[1], xBuff[0] + reflection[0], xBuff[1] + reflection[1]); // Draws Reflection Vector
 }
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
