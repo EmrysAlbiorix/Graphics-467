@@ -48,6 +48,7 @@ void Draw_object (int onum)
       y = xyz[1] ;
       G_point(x,y) ;      
     } else if (obtype[onum] == 2) {
+      // Trunkated Hyperbola
       t = -1 + 2.0*i/(n-1) ;
       
       xyz[0] = sqrt(1 + t*t) ;
@@ -106,19 +107,28 @@ double quadratic_solve(double a, double b, double c) {
   // If both values are not positive or if none is lower, no value is returned
 }
 
+// Solves hyperbola's other side (returns the furthur x value)
+double hyper_solve(double a, double b, double c) {
+  double x1, x2;
 
-// Intersect?
-int intersect_ray_with_object(int objnum, double a[3], double c[3], double res[]) 
-{
+  // Calculate the solutions using the quadratic formula
+  x1 = (-b + sqrt((b * b) - 4 * a * c)) / (2 * a);
+  x2 = (-b - sqrt((b * b) - 4 * a * c)) / (2 * a);
 
+  // Return the lower of the positive values of x1 and x2
+  if (x1 > 0 && x1 <= x2) {
+    return x2;
+  } else if (x2 > 0 && x2 <= x1) {
+    return x1;
+  }
+  // If both values are not positive or if none is lower, no value is returned
 }
 
 
-// Normal in object space
-int normal_in_object_space(int objnum, double x, double y, double z, double normal[3]) 
-{
-
-}
+/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
 // Sets a standard length of scale
 void normalizeVector(double v[], double res[], double scale){
@@ -139,9 +149,23 @@ void getNormal(int objnum, double normal[], double intersect[]) {
   
   // Calculate the normal vector in object-local coordinates
   //printf("%d, \t %lf, %lf\n", objnum, intersect[0], intersect[1]) ;
-  normal[0] = 2 * intersectObjSpace[0];
-  normal[1] = 2 * intersectObjSpace[1];
-  normal[2] = 0;
+  switch(obtype[objnum]){
+    case 0: // line
+      normal[0] = intersectObjSpace[0] ;
+      normal[1] = 1 ;
+      normal[2] = 0 ;
+    break;
+    case 1: // circle
+      normal[0] = 2 * intersectObjSpace[0] ;
+      normal[1] = 2 * intersectObjSpace[1] ;
+      normal[2] = 0 ;
+    break;
+    case 2: // hyperbola
+      normal[0] = intersectObjSpace[0] ;
+      normal[1] = 1 ;
+      normal[2] = 0 ;
+    break;
+  }
   
   // Transoposes the shit
   double transpose[4][4] = {
@@ -157,7 +181,9 @@ void getNormal(int objnum, double normal[], double intersect[]) {
   // Normalizes
   normalizeVector(normal, normal, 25) ;
 }
-
+/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////
 // Does the actual RayTracing shit
@@ -178,14 +204,50 @@ int rayThing(double Rsource[], double Rtip[]) {
 
     // Calculate coefficients of the quadratic equation for the object
     double A, B, C;
-    A = (RtipT[0] - RsourceT[0]) * (RtipT[0] - RsourceT[0]) +
-        (RtipT[1] - RsourceT[1]) * (RtipT[1] - RsourceT[1]);
-    B = 2 * RsourceT[0] * (RtipT[0] - RsourceT[0]) +
-        2 * RsourceT[1] * (RtipT[1] - RsourceT[1]);
-    C = (RsourceT[1] * RsourceT[1]) + (RsourceT[0] * RsourceT[0]) - 1;
+    if (obtype[objnum] == 0 || obtype[objnum] == 1) {
+      // Finds the intersections for circles and lines?
+      A = (RtipT[0] - RsourceT[0]) * (RtipT[0] - RsourceT[0]) +
+          (RtipT[1] - RsourceT[1]) * (RtipT[1] - RsourceT[1]);
+      B = 2 * RsourceT[0] * (RtipT[0] - RsourceT[0]) +
+          2 * RsourceT[1] * (RtipT[1] - RsourceT[1]);
+      C = (RsourceT[1] * RsourceT[1]) + (RsourceT[0] * RsourceT[0]) - 1;
+    } else {
+      // Finds the intersections for the hyperbola
+      A = (RtipT[0] - RsourceT[0]) * (RtipT[0] - RsourceT[0]) -
+          (RtipT[1] - RsourceT[1]) * (RtipT[1] - RsourceT[1]);
+      B = 2 * RsourceT[0] * (RtipT[0] - RsourceT[0]) -
+          2 * RsourceT[1] * (RtipT[1] - RsourceT[1]);
+      C = (RsourceT[0] * RsourceT[0]) - (RsourceT[1] * RsourceT[1]) - 1;
+    }
 
     // Solve the quadratic equation for finding the intersections of the ray
-    double t = quadratic_solve(A, B, C);
+    double t = 0 ;
+    if (obtype[objnum] == 0) { // line
+      double line[3] = {RtipT[0] - RsourceT[0], RtipT[1] - RsourceT[1], RtipT[2] - RsourceT[2]} ;
+      t = -RsourceT[1]/line[1] ;
+      double xt = RsourceT[0] + (line[0]*t) ;
+      //printf("t: %lf,	xt: %lf\n", t, xt) ;
+      if (t < 0 || fabs(xt) > 1) {
+        continue ;
+      }
+    } else if (obtype[objnum] == 1) { // circle
+      t = quadratic_solve(A, B, C) ;
+    } else if (obtype[objnum] == 2) { // hyperbola
+      t = quadratic_solve(A, B, C) ;
+      //printf("t: %lf\n", t) ;
+      double trunkY = RsourceT[1] + t * (RtipT[1] - RsourceT[1]) ;
+      //printf("trunkY: %lf\n", trunkY) ;
+      if (trunkY > 1 || trunkY < -1) {
+        t = hyper_solve(A, B, C);
+        continue ;
+      } else {
+        //t = quadratic_solve(A, B, C) ;
+        //printf("inside t: %lf\n", t) ;
+        //printf("Enter\n") ;
+      }
+    } else {
+      printf("%d is not an object type.\n", obtype[objnum]) ;
+    }
 
     // Calculate the intersection point in object-local coordinates
     double intersect[3];
@@ -215,13 +277,14 @@ int rayThing(double Rsource[], double Rtip[]) {
   
   // Find Normal
   getNormal(RGBnum, normal, xBuff) ;
+
   
   // Does the drawing
   G_rgb(color[RGBnum][0], color[RGBnum][1], color[RGBnum][2]) ; // Shape color
   G_fill_circle(Rtip[0], Rtip[1], 1) ; // Mark the ray tip
   G_line(Rsource[0], Rsource[1], Rtip[0], Rtip[1]) ; // Inner Line
   G_rgb(.8, .8, .8) ;
-  G_line(Rtip[0], Rtip[1], xBuff[0], xBuff[1]) ; // Outer Line
+  //G_line(Rtip[0], Rtip[1], xBuff[0], xBuff[1]) ; // Outer Line
   G_line(xBuff[0], xBuff[1], xBuff[0] + normal[0], xBuff[1] + normal[1]) ; // Draws the Normal Vector
 }
 //////////////////////////////////////////////////////////////
@@ -388,7 +451,7 @@ int test01()
 
     G_rgb(1,1,1) ; G_draw_string("'q' to quit", 50,50) ;
     while (G_wait_key() != 'q') ;
-    G_save_image_to_file("2d_RayTrace2_v1.xwd") ;
+    G_save_image_to_file("2d_RayTrace2_v2.xwd") ;
 }
 
 
