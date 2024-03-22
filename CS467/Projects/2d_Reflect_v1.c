@@ -177,39 +177,19 @@ void getNormal(int objnum, double normal[], double intersect[]) {
   // Math
   M3d_mat_mult_pt(normal, transpose, normal) ;
   //printf("Normal: %lf, %lf\n", normal[0], normal[1]) ;
-
-  // Normalizes
-  normalizeVector(normal, normal, 25) ;
 }
 
 //////////////////////////////////////////////////////////////
 // Finds Reflection Vector
 //////////////////////////////////////////////////////////////
 void getReflect(double normal[], double incoming[], double reflection[]) {
-    // Normalize the incoming ray direction
-    double incomingMagnitude = sqrt(incoming[0] * incoming[0] + incoming[1] * incoming[1] + incoming[2] * incoming[2]);
-    double normalizedIncoming[3] = {incoming[0] / incomingMagnitude, incoming[1] / incomingMagnitude, incoming[2] / incomingMagnitude};
-
-    // Calculate dot product of normal and incoming ray direction
-    double dotProduct = 2 * (normalizedIncoming[0] * normal[0] + normalizedIncoming[1] * normal[1] + normalizedIncoming[2] * normal[2]);
-
-    // Calculate reflection vector using normalized incoming ray direction and surface normal
-    reflection[0] = normalizedIncoming[0] - dotProduct * normal[0];
-    reflection[1] = normalizedIncoming[1] - dotProduct * normal[1];
-    reflection[2] = normalizedIncoming[2] - dotProduct * normal[2];
-
-    // Ensure the reflection vector is normalized
-    double reflectionMagnitude = sqrt(reflection[0] * reflection[0] + reflection[1] * reflection[1] + reflection[2] * reflection[2]);
-    if (reflectionMagnitude > 0) {
-        reflection[0] /= reflectionMagnitude;
-        reflection[1] /= reflectionMagnitude;
-        reflection[2] /= reflectionMagnitude;
-    }
+    // Calculate reflection vector using incoming ray direction and surface normal
+    // R = I - 2 * dot(N, I) * N
+    double dotProduct = 2 * (incoming[0] * normal[0] + incoming[1] * normal[1] + incoming[2] * normal[2]);
+    reflection[0] = incoming[0] - dotProduct * normal[0];
+    reflection[1] = incoming[1] - dotProduct * normal[1];
+    reflection[2] = incoming[2] - dotProduct * normal[2];
 }
-
-
-
-
 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
@@ -298,6 +278,10 @@ int rayThing(double Rsource[], double Rtip[]) {
 
     // Transform the intersection point back to world coordinates
     M3d_mat_mult_pt(intersect, obmat[objnum], intersect);
+    
+    // Plots a point at the intersect to test
+    G_rgb(1, 1, 1) ;
+    G_fill_circle(intersect[0], intersect[1], 2) ;
 
     // Saves the point that is closer to filter if intersects with objects
     if (t > 0) {
@@ -319,6 +303,9 @@ int rayThing(double Rsource[], double Rtip[]) {
   
   // Find Normal
   getNormal(RGBnum, normal, xBuff) ;
+  
+  // Normalizes
+  normalizeVector(normal, normal, 25) ;
   
   // Define the incoming ray direction
   double incoming[3] = {Rtip[0] - Rsource[0], Rtip[1] - Rsource[1], Rtip[2] - Rsource[2]};
@@ -472,40 +459,47 @@ int test01()
     num_objects++ ; // don't forget to do this        
     //////////////////////////////////////////////////////////////    
 
-    
-
     G_rgb(0,0,0) ;
     G_clear() ;
 
     Draw_the_scene() ;
     
+    /*
     Rsource[0] =  20 ;  Rsource[1] =  400 ;  Rsource[2] = 0 ;    
     G_rgb(1,0,1) ; G_fill_circle(Rsource[0], Rsource[1], 3) ;
     G_rgb(1,0,1) ; G_line(100,200,  100,600) ;
+    */
     
-    G_wait_key() ;
+    //G_wait_key() ;
     
-    double ytip ;
-    for (ytip = 200 ; ytip <= 600 ; ytip++) {
-    // Set the tip of the ray
-    Rtip[0] = 100; Rtip[1] = ytip; Rtip[2] = 0;   
-
-    // Draw the ray from the source to the tip
-    G_rgb(1, 1, 0); G_line(Rsource[0], Rsource[1], Rtip[0], Rtip[1]); 
-
+    // Creates point at first click
+    double P[2] ;
+    G_wait_click(P) ;
+    G_rgb(1,0,1) ;
+    G_fill_circle(P[0], P[1], 2) ;
+    
+    // Creates point at second click
+    double Q[2] ;
+    G_wait_click(Q) ;
+    G_rgb(1,0,1) ;
+    G_fill_circle(Q[0], Q[1], 2) ;
+    
+    // Defines the points to send to rayThing
+    Rsource[0] = P[0] ; Rsource[1] = P[1] ; Rsource[2] = 0 ;
+    Rtip[0] = Q[0] ; Rtip[1] = Q[1] ; Rtip[2] = 0 ;
+    
     // Draw the scene
     Draw_the_scene();
-    
-    // RayTrace thing, takes in two arrays
+  
+    // RayTrace thing, takes in two arrays (Still computes for further left on x axis)
     rayThing(Rsource, Rtip) ;
 
     // Wait for user input before proceeding to the next ray
-    G_wait_key();
-  }
+    //G_wait_key();
 
     G_rgb(1,1,1) ; G_draw_string("'q' to quit", 50,50) ;
     while (G_wait_key() != 'q') ;
-    G_save_image_to_file("2d_RayTrace2_v3.xwd") ;
+    G_save_image_to_file("2d_Reflect_v1.xwd") ;
 }
 
 
