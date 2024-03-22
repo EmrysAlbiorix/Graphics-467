@@ -177,9 +177,14 @@ void getNormal(int objnum, double normal[], double intersect[]) {
   // Math
   M3d_mat_mult_pt(normal, transpose, normal) ;
   //printf("Normal: %lf, %lf\n", normal[0], normal[1]) ;
+}
 
-  // Normalizes
-  normalizeVector(normal, normal, 25) ;
+// Corrects the normal vector based on the direction of the incoming line
+void fixNormal(double normal[], double incoming[], double fixed[]) {
+  double dotProduct = incoming[0] * normal[0] + incoming[1] * normal[1] + incoming[2] * normal[2] ;
+  fixed[0] = -dotProduct * normal[0] ;
+  fixed[1] = -dotProduct * normal[1] ;
+  fixed[2] = -dotProduct * normal[2] ;
 }
 
 //////////////////////////////////////////////////////////////
@@ -188,10 +193,10 @@ void getNormal(int objnum, double normal[], double intersect[]) {
 void getReflect(double normal[], double incoming[], double reflection[]) {
     // Calculate reflection vector using incoming ray direction and surface normal
     // R = I - 2 * dot(N, I) * N
-    double dotProduct = 2 * (incoming[0] * normal[0] + incoming[1] * normal[1] + incoming[2] * normal[2]) ;
-    reflection[0] = incoming[0] - (dotProduct * normal[0]) ;
-    reflection[1] = incoming[1] - (dotProduct * normal[1]) ;
-    reflection[2] = incoming[2] - (dotProduct * normal[2]) ;
+    double dotProduct = 2 * (incoming[0] * normal[0] + incoming[1] * normal[1] + incoming[2] * normal[2]);
+    reflection[0] = normal[0] - dotProduct * incoming[0];
+    reflection[1] = normal[1] - dotProduct * incoming[1];
+    reflection[2] = normal[2] - dotProduct * incoming[2];
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -306,11 +311,18 @@ int rayThing(double Rsource[], double Rtip[]) {
   // Define the incoming ray direction
   double incoming[3] = {Rtip[0] - Rsource[0], Rtip[1] - Rsource[1], Rtip[2] - Rsource[2]};
   
+  // Fixes the hyperbola normals
+  double fix[3] ;
+  fixNormal(normal, incoming, fix) ;
+  //fixNormal(normal, incoming, normal) ;
+  
   // Calculate reflection vector
   double reflection[3];
   getReflect(normal, incoming, reflection);
   
-  // Normalize reflection vector
+  // Normalize vectors
+  normalizeVector(normal, normal, 25) ;
+  normalizeVector(fix, fix, 15) ;
   normalizeVector(reflection, reflection, 15) ;
 
   
@@ -322,6 +334,9 @@ int rayThing(double Rsource[], double Rtip[]) {
   //G_line(Rtip[0], Rtip[1], xBuff[0], xBuff[1]) ; // Outer Line
   G_line(xBuff[0], xBuff[1], xBuff[0] + normal[0], xBuff[1] + normal[1]) ; // Draws the Normal Vector
   G_rgb(1, 0, 0) ;
+  G_line(xBuff[0], xBuff[1], xBuff[0] + fix[0], xBuff[1] + fix[1]) ; // Draws the Fixed Normal Vector
+  
+  G_rgb(0, 0, 1) ;
   G_line(xBuff[0] + 0.001*reflection[0], xBuff[1] + 0.001*reflection[1], xBuff[0] + reflection[0], xBuff[1] + reflection[1]); // Draws Reflection Vector
 }
 //////////////////////////////////////////////////////////////
