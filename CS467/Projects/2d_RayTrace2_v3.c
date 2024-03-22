@@ -186,30 +186,13 @@ void getNormal(int objnum, double normal[], double intersect[]) {
 // Finds Reflection Vector
 //////////////////////////////////////////////////////////////
 void getReflect(double normal[], double incoming[], double reflection[]) {
-    // Normalize the incoming ray direction
-    double incomingMagnitude = sqrt(incoming[0] * incoming[0] + incoming[1] * incoming[1] + incoming[2] * incoming[2]);
-    double normalizedIncoming[3] = {incoming[0] / incomingMagnitude, incoming[1] / incomingMagnitude, incoming[2] / incomingMagnitude};
-
-    // Calculate dot product of normal and incoming ray direction
-    double dotProduct = 2 * (normalizedIncoming[0] * normal[0] + normalizedIncoming[1] * normal[1] + normalizedIncoming[2] * normal[2]);
-
-    // Calculate reflection vector using normalized incoming ray direction and surface normal
-    reflection[0] = normalizedIncoming[0] - dotProduct * normal[0];
-    reflection[1] = normalizedIncoming[1] - dotProduct * normal[1];
-    reflection[2] = normalizedIncoming[2] - dotProduct * normal[2];
-
-    // Ensure the reflection vector is normalized
-    double reflectionMagnitude = sqrt(reflection[0] * reflection[0] + reflection[1] * reflection[1] + reflection[2] * reflection[2]);
-    if (reflectionMagnitude > 0) {
-        reflection[0] /= reflectionMagnitude;
-        reflection[1] /= reflectionMagnitude;
-        reflection[2] /= reflectionMagnitude;
-    }
+    // Calculate reflection vector using incoming ray direction and surface normal
+    // R = I - 2 * dot(N, I) * N
+    double dotProduct = 2 * (incoming[0] * normal[0] + incoming[1] * normal[1] + incoming[2] * normal[2]) ;
+    reflection[0] = incoming[0] - (dotProduct * normal[0]) ;
+    reflection[1] = incoming[1] - (dotProduct * normal[1]) ;
+    reflection[2] = incoming[2] - (dotProduct * normal[2]) ;
 }
-
-
-
-
 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
