@@ -257,42 +257,7 @@ int rayThing(double Rsource[], double Rtip[]) {
         }
       } else {
         continue ;
-      }
-      
-      /*
-      if (trunkY1 > 1 || trunkY1 < -1 && trunkY2 <= 1 && trunkY2 >= -1) { //1 outside 2 inside
-        t = t2 ;
-      } else if (trunkY1 <= 1 && trunkY1 >= -1 && trunkY2 > 1 || trunkY2 < -1) { //1 inside 2 outside
-      	t = t1 ;
-      } else if (trunkY1 <= 1 && trunkY1 >= -1 && trunkY2 <= 1 && trunkY2 >= -1) { //both inside
-      	if(t1 < t2) {
-      	  t = t1 ;
-      	} else {
-      	  t = t2 ;
-      	}
-      } else {
-      	continue ;
-      }
-      */
-      
-      //---------------------------------------------------------------------------------
-      
-      /* Fionn's shit 
-      t = quadratic_solve(A, B, C) ; // Front half hyperbola
-      //t = hyper_solve(A, B, C) ; // Back half hyperbola
-      //printf("t: %lf\n", t) ;
-      double trunkY = RsourceT[1] + t * (RtipT[1] - RsourceT[1]) ;
-      //printf("trunkY: %lf\n", trunkY) ;
-      if (trunkY > 1 || trunkY < -1) {
-        
-        continue ;
-      } else {
-        //t = quadratic_solve(A, B, C) ;
-        //printf("inside t: %lf\n", t) ;
-        //printf("Enter\n") ;
-      }
-      //*/
-      
+      }    
     } else {
       printf("%d is not an object type.\n", obtype[objnum]) ;
     }
@@ -499,7 +464,7 @@ int test01()
 
     G_rgb(1,1,1) ; G_draw_string("'q' to quit", 50,50) ;
     while (G_wait_key() != 'q') ;
-    G_save_image_to_file("2d_RayTrace2_v2.xwd") ;
+    G_save_image_to_file("2d_RayTrace2_v3.xwd") ;
 }
 
 
