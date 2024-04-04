@@ -90,8 +90,28 @@ void Draw_the_scene()
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 
+
+int  quadratic_solve(double a, double b, double c, double res[2])
+{
+  double d = b*b - 4*a*c ;
+
+  if (d <0) return 0 ;
+
+  if (d == 0) { res[0] = -b/(2*a) ; return 1 ; }
+
+
+  // Calculate the solutions using the quadratic formula
+  res[0] = (-b + sqrt(d)) / (2 * a);
+  res[1] = (-b - sqrt(d)) / (2 * a);
+
+  return 2 ;
+
+}
+
+
+
 // Solves quadratic equation of the form ax^2 + bx + c = 0
-double quadratic_solve(double a, double b, double c) {
+double OLDquadratic_solve(double a, double b, double c) {
   double x1, x2;
 
   // Calculate the solutions using the quadratic formula
@@ -161,6 +181,8 @@ double dotProduct(double v1[], double v2[], int size) {
 void getNormal(int objnum, double normal[], double intersect[]) {
   // Moves back to obj-space
   double intersectObjSpace[3];
+
+  
   M3d_mat_mult_pt(intersectObjSpace, obinv[objnum], intersect) ;
   
   // Calculate the normal vector in object-local coordinates
@@ -225,8 +247,16 @@ int rayThing(double Rsource[], double Rtip[]) {
   double normal[3] ;
   int RGBnum ;
 
+
+
+  
   // Transform the ray endpoints into object-local coordinates for each object
   double RsourceT[3], RtipT[3];
+
+  double tbest = 1e50 ;
+  int obest = -1 ;
+
+  
   for (int objnum = 0; objnum < num_objects; objnum++) {
     // Transform the ray source and tip into object-local coordinates
     M3d_mat_mult_pt(RsourceT, obinv[objnum], Rsource);
@@ -253,6 +283,8 @@ int rayThing(double Rsource[], double Rtip[]) {
     // Solve the quadratic equation for finding the intersections of the ray
     double t = 0, t1 = 0, t2 = 0 ;
     if (obtype[objnum] == 0) { // line
+
+      /*
       double line[3] = {RtipT[0] - RsourceT[0], RtipT[1] - RsourceT[1], RtipT[2] - RsourceT[2]} ;
       t = -RsourceT[1]/line[1] ;
       double xt = RsourceT[0] + (line[0]*t) ;
@@ -260,9 +292,29 @@ int rayThing(double Rsource[], double Rtip[]) {
       if (t < 0 || fabs(xt) > 1) {
         continue ;
       }
+      */
+
     } else if (obtype[objnum] == 1) { // circle
-      t = quadratic_solve(A, B, C) ;
+
+      int nn ;
+      double qres[2] ;
+      double tq ;
+      nn = quadratic_solve(A, B, C, qres) ;
+      tq = 1e50 ;
+      for (int ii = 0 ; ii < nn ; ii++) {
+	if (qres[ii] > 0 && qres[ii] < tq) {
+          tq = qres[ii] ;
+	}
+      }
+      if (tq < tbest) {
+        tbest = tq ;
+        obest = objnum ;
+      }
+      
+      
+      
     } else if (obtype[objnum] == 2) { // hyperbola
+      /*
       double trunkY1 = 0, trunkY2 = 0 ;
       //hyper_solve(A,B,C,t1,t2);
       //t1 = (-B + sqrt((B * B) - 4 * A * C)) / (2 * A) ;
@@ -285,73 +337,74 @@ int rayThing(double Rsource[], double Rtip[]) {
         }
       } else {
         continue ;
-      }    
+      } 
+      */
+      
     } else {
       printf("%d is not an object type.\n", obtype[objnum]) ;
     }
 
+
+
+  } // end for
+
+
+
+
+  
+
+  if (obest == - 1) {
+
+    ;
+
+  } else {
+
+    printf("obest = %d tbest = %lf\n", obest,tbest) ;
+    
     // Calculate the intersection point in object-local coordinates
     double intersect[3];
-    intersect[0] = RsourceT[0] + t * (RtipT[0] - RsourceT[0]);
-    intersect[1] = RsourceT[1] + t * (RtipT[1] - RsourceT[1]);
+    intersect[0] = Rsource[0] + tbest * (Rtip[0] - Rsource[0]);
+    intersect[1] = Rsource[1] + tbest * (Rtip[1] - Rsource[1]);
+    intersect[2] = 0 ;
 
+    
     // Transform the intersection point back to world coordinates
-    M3d_mat_mult_pt(intersect, obmat[objnum], intersect);
+    //    M3d_mat_mult_pt(intersect, obmat[obest], intersect);
     
     // Plots a point at the intersect to test
     G_rgb(1, 1, 1) ;
     G_fill_circle(intersect[0], intersect[1], 2) ;
+
+
+    //    getNormal(int objnum, double normal[], double intersect[]) {
+    double normal[3] ;
+    getNormal(obest, normal, intersect) ;
+    double len = sqrt(normal[0]*normal[0] + normal[1]*normal[1]) ;
+    normal[0] /= len ; normal[1] /= len ;
+    printf("%lf %lf\n",normal[0],normal[1]) ;
+    G_line (intersect[0], intersect[1],
+	    intersect[0]+20*normal[0], intersect[1]+20*normal[1]) ;
+
+    double incoming[3] ;
+    double reflec[3] ;
+    incoming[0] = Rtip[0] - Rsource[0] ;
+    incoming[1] = Rtip[1] - Rsource[1] ;    
     
-    // Finds the distance between intersect and Rsource
-    double xMath = (intersect[0] - Rsource[0]) * (intersect[0] - Rsource[0]) ;
-    double yMath = (intersect[1] - Rsource[1]) * (intersect[1] - Rsource[1]) ;
-    double distance = sqrt(xMath + yMath) ;
-    
-    // Finds the distance between xBuff and Rsource
-    double xRes = (xBuff[0] - Rsource[0]) * (xBuff[0] - Rsource[0]) ;
-    double yRes = (xBuff[1] - Rsource[1]) * (xBuff[1] - Rsource[1]) ;
-    double distance2 = sqrt(xRes + yRes) ;
-    
-    if (t > 0 && (distance < distance2 || xBuff[0] <= 0)) {
-      // Saves the point that is closer to Rsource if intersects with objects
-      xBuff[0] = intersect[0] ;
-      xBuff[1] = intersect[1] ;
-      xBuff[2] = intersect[2] ;
-      
-      // Saves the correct color
-      RGBnum = objnum ;
-    }
+    getReflect (normal , incoming, reflec) ;
+
+    G_rgb(1,0,0) ;
+    G_line (intersect[0], intersect[1],
+	    intersect[0]+20*reflec[0], intersect[1]+20*reflec[1]) ;    
+
   }
-  
-  // Checks if < 0
-  if (xBuff[0] < 0) {
-    return 0 ;
-  }
-  
-  // Find Normal
-  getNormal(RGBnum, normal, xBuff) ;
-  
-  // Define the incoming ray direction
-  double incoming[3] = {Rtip[0] - Rsource[0], Rtip[1] - Rsource[1], Rtip[2] - Rsource[2]};
-  
-  // Calculate reflection vector
-  double reflection[3];
-  getReflect(normal, incoming, reflection);
-  
-  // Normalize reflection vector
-  normalizeVector(reflection, reflection, 50) ;
+
 
   
-  // Does the drawing
-  G_rgb(color[RGBnum][0], color[RGBnum][1], color[RGBnum][2]) ; // Shape color
-  G_fill_circle(Rtip[0], Rtip[1], 1) ; // Mark the ray tip
-  G_line(Rsource[0], Rsource[1], Rtip[0], Rtip[1]) ; // Inner Line
-  G_rgb(.8, .8, .8) ;
-  //G_line(Rtip[0], Rtip[1], xBuff[0], xBuff[1]) ; // Outer Line
-  //G_line(xBuff[0], xBuff[1], xBuff[0] + normal[0], xBuff[1] + normal[1]) ; // Draws the Normal Vector
-  G_rgb(1, 0, 0) ;
-  G_line(xBuff[0] + 0.001*reflection[0], xBuff[1] + 0.001*reflection[1], xBuff[0] + reflection[0], xBuff[1] + reflection[1]); // Draws Reflection Vector
-}
+
+
+  
+
+} //end rayThhing
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
@@ -446,6 +499,9 @@ int test01()
     M3d_mat_mult(obinv[num_objects], mi, vi) ;
 
     num_objects++ ; // don't forget to do this        
+
+
+    /*
     //////////////////////////////////////////////////////////////
     obtype[num_objects] = 0 ; // line segment
     color[num_objects][0] = 0.5 ;
@@ -482,6 +538,9 @@ int test01()
 
     num_objects++ ; // don't forget to do this        
     //////////////////////////////////////////////////////////////    
+    */
+    
+
 
     G_rgb(0,0,0) ;
     G_clear() ;

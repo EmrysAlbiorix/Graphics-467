@@ -210,13 +210,14 @@ void alterNormal(double normal[], double incoming[], double fixed[]) {
 void getReflect(double normal[], double incoming[], double reflection[]) {
     // Calculate reflection vector using incoming ray direction and surface normal
     // R = I - 2 * dot(N, I) * N
-    double dotProd = dotProduct(normal, incoming, 3) ;
+    normalizeVector(normal, normal, 1) ;
+    normalizeVector(incoming, incoming, 1) ;
     
-    normalizeVector(normal, normal, 25) ;
+    double dotProd = dotProduct(normal, incoming, 2) ;
     
-    reflection[0] = incoming[0] - 2 * dotProd * normal[0];
-    reflection[1] = incoming[1] - 2 * dotProd * normal[1];
-    reflection[2] = incoming[2] - 2 * dotProd * normal[2];
+    reflection[0] = incoming[0] - 2 * dotProd * normal[0] ;
+    reflection[1] = incoming[1] - 2 * dotProd * normal[1] ;
+    reflection[2] = incoming[2] - 2 * dotProd * normal[2] ;
 }	
 
 /////////////////////////////////////////////////////////////////////////
@@ -531,7 +532,7 @@ int test01()
 
     G_rgb(1,1,1) ; G_draw_string("'q' to quit", 50,50) ;
     while (G_wait_key() != 'q') ;
-    G_save_image_to_file("2d_RayTrace2_v3.xwd") ;
+    G_save_image_to_file("2d_RayTrace2_v4.xwd") ;
 }
 
 
