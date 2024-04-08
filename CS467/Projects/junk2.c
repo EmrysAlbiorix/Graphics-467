@@ -90,12 +90,11 @@ void Draw_the_scene()
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 
-
-int  quadratic_solve(double a, double b, double c, double res[2])
-{
+// Solves quadratic equation, returns number of solutions and saves solution in res array
+int quadratic_solve(double a, double b, double c, double res[2]) {
   double d = b*b - 4*a*c ;
 
-  if (d <0) return 0 ;
+  if (d < 0) return 0 ;
 
   if (d == 0) { res[0] = -b/(2*a) ; return 1 ; }
 
@@ -107,8 +106,6 @@ int  quadratic_solve(double a, double b, double c, double res[2])
   return 2 ;
 
 }
-
-
 
 // Solves quadratic equation of the form ax^2 + bx + c = 0
 double OLDquadratic_solve(double a, double b, double c) {
@@ -302,9 +299,9 @@ int rayThing(double Rsource[], double Rtip[]) {
       nn = quadratic_solve(A, B, C, qres) ;
       tq = 1e50 ;
       for (int ii = 0 ; ii < nn ; ii++) {
-	if (qres[ii] > 0 && qres[ii] < tq) {
+				if (qres[ii] > 0 && qres[ii] < tq) {
           tq = qres[ii] ;
-	}
+				}
       }
       if (tq < tbest) {
         tbest = tq ;
@@ -393,24 +390,17 @@ int rayThing(double Rsource[], double Rtip[]) {
     getReflect (normal , incoming, reflec) ;
 
     G_rgb(1,0,0) ;
-    G_line (intersect[0], intersect[1],
-	    intersect[0]+20*reflec[0], intersect[1]+20*reflec[1]) ;    
+    G_line (intersect[0], 						 intersect[1],
+	    			intersect[0]+20*reflec[0], intersect[1]+20*reflec[1]) ;    
 
   }
-
-
   
-
-
-  
-
 } //end rayThhing
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 
 
-int test01()
-{
+int test01() {
   double vm[4][4], vi[4][4];
   double Tvlist[100];
   int Tn, Ttypelist[100];
@@ -419,171 +409,187 @@ int test01()
   double Rtip[3];
   double argb[3] ;
 
-    //////////////////////////////////////////////////////////////////////
-    M3d_make_identity(vm) ;    M3d_make_identity(vi) ; // OVERRIDE for 2d
-    //////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////
+  M3d_make_identity(vm) ;    M3d_make_identity(vi) ; // OVERRIDE for 2d
+  //////////////////////////////////////////////////////////////////////
 
-    num_objects = 0 ;
+  num_objects = 0 ;
 
-    //////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////
-    obtype[num_objects] = 1 ; // circle
-    color[num_objects][0] = 0.0 ;
-    color[num_objects][1] = 0.8 ; 
-    color[num_objects][2] = 0.0 ;
+  //////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////
+  obtype[num_objects] = 1 ; // circle
+  color[num_objects][0] = 0.0 ;
+  color[num_objects][1] = 0.8 ; 
+  color[num_objects][2] = 0.0 ;
 	
-    Tn = 0 ;
-    Ttypelist[Tn] = SX ; Tvlist[Tn] =   60   ; Tn++ ;
-    Ttypelist[Tn] = SY ; Tvlist[Tn] =  100   ; Tn++ ;
-    Ttypelist[Tn] = RZ ; Tvlist[Tn] =   25   ; Tn++ ;
-    Ttypelist[Tn] = TX ; Tvlist[Tn] =  300   ; Tn++ ;
-    Ttypelist[Tn] = TY ; Tvlist[Tn] =  200   ; Tn++ ;
+  Tn = 0 ;
+  Ttypelist[Tn] = SX ; Tvlist[Tn] =   60   ; Tn++ ;
+  Ttypelist[Tn] = SY ; Tvlist[Tn] =  100   ; Tn++ ;
+  Ttypelist[Tn] = RZ ; Tvlist[Tn] =   25   ; Tn++ ;
+  Ttypelist[Tn] = TX ; Tvlist[Tn] =  300   ; Tn++ ;
+  Ttypelist[Tn] = TY ; Tvlist[Tn] =  200   ; Tn++ ;
 	
-    M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
-    M3d_mat_mult(obmat[num_objects], vm, m) ;
-    M3d_mat_mult(obinv[num_objects], mi, vi) ;
+  M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
+  M3d_mat_mult(obmat[num_objects], vm, m) ;
+  M3d_mat_mult(obinv[num_objects], mi, vi) ;
 
-    num_objects++ ; // don't forget to do this
+  num_objects++ ; // don't forget to do this
 
-    //////////////////////////////////////////////////////////////
-    obtype[num_objects] = 1 ; // circle    
-    color[num_objects][0] = 1.0 ;
-    color[num_objects][1] = 0.3 ; 
-    color[num_objects][2] = 0.0 ;
+  //////////////////////////////////////////////////////////////
+  obtype[num_objects] = 1 ; // circle    
+  color[num_objects][0] = 1.0 ;
+  color[num_objects][1] = 0.3 ; 
+  color[num_objects][2] = 0.0 ;
 	
-    Tn = 0 ;
-    Ttypelist[Tn] = SX ; Tvlist[Tn] =  180   ; Tn++ ;
-    Ttypelist[Tn] = SY ; Tvlist[Tn] =   40   ; Tn++ ;
-    Ttypelist[Tn] = RZ ; Tvlist[Tn] =   60   ; Tn++ ;
-    Ttypelist[Tn] = TX ; Tvlist[Tn] =  400   ; Tn++ ;
-    Ttypelist[Tn] = TY ; Tvlist[Tn] =  550   ; Tn++ ;
+  Tn = 0 ;
+  Ttypelist[Tn] = SX ; Tvlist[Tn] =  180   ; Tn++ ;
+  Ttypelist[Tn] = SY ; Tvlist[Tn] =   40   ; Tn++ ;
+  Ttypelist[Tn] = RZ ; Tvlist[Tn] =   60   ; Tn++ ;
+  Ttypelist[Tn] = TX ; Tvlist[Tn] =  400   ; Tn++ ;
+  Ttypelist[Tn] = TY ; Tvlist[Tn] =  550   ; Tn++ ;
 	
-    M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
-    M3d_mat_mult(obmat[num_objects], vm, m) ;
-    M3d_mat_mult(obinv[num_objects], mi, vi) ;
+  M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
+  M3d_mat_mult(obmat[num_objects], vm, m) ;
+  M3d_mat_mult(obinv[num_objects], mi, vi) ;
 
-    num_objects++ ; // don't forget to do this
-    //////////////////////////////////////////////////////////////
-    obtype[num_objects] = 1 ; // circle    
-    color[num_objects][0] = 0.3 ;
-    color[num_objects][1] = 0.3 ; 
-    color[num_objects][2] = 1.0 ;
-	
-    Tn = 0 ;
-    Ttypelist[Tn] = SX ; Tvlist[Tn] =   75   ; Tn++ ;
-    Ttypelist[Tn] = SY ; Tvlist[Tn] =   35   ; Tn++ ;
-    Ttypelist[Tn] = RZ ; Tvlist[Tn] =  150   ; Tn++ ;
-    Ttypelist[Tn] = TX ; Tvlist[Tn] =  360   ; Tn++ ;
-    Ttypelist[Tn] = TY ; Tvlist[Tn] =  500   ; Tn++ ;
-	
-    M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
-    M3d_mat_mult(obmat[num_objects], vm, m) ;
-    M3d_mat_mult(obinv[num_objects], mi, vi) ;
+  num_objects++ ; // don't forget to do this
+  //////////////////////////////////////////////////////////////
+  obtype[num_objects] = 1 ; // circle    
+  color[num_objects][0] = 0.3 ;
+  color[num_objects][1] = 0.3 ; 
+  color[num_objects][2] = 1.0 ;
 
-    num_objects++ ; // don't forget to do this        
-    //////////////////////////////////////////////////////////////
-    obtype[num_objects] = 1 ; // circle    
-    color[num_objects][0] = 0.5 ;
-    color[num_objects][1] = 1.0 ; 
-    color[num_objects][2] = 1.0 ;
-	
-    Tn = 0 ;
-    Ttypelist[Tn] = SX ; Tvlist[Tn] =  130   ; Tn++ ;
-    Ttypelist[Tn] = SY ; Tvlist[Tn] =   30   ; Tn++ ;
-    Ttypelist[Tn] = RZ ; Tvlist[Tn] =  -15   ; Tn++ ;
-    Ttypelist[Tn] = TX ; Tvlist[Tn] =  100   ; Tn++ ;
-    Ttypelist[Tn] = TY ; Tvlist[Tn] =  700   ; Tn++ ;
-	
-    M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
-    M3d_mat_mult(obmat[num_objects], vm, m) ;
-    M3d_mat_mult(obinv[num_objects], mi, vi) ;
+  Tn = 0 ;
+  Ttypelist[Tn] = SX ; Tvlist[Tn] =   75   ; Tn++ ;
+  Ttypelist[Tn] = SY ; Tvlist[Tn] =   35   ; Tn++ ;
+  Ttypelist[Tn] = RZ ; Tvlist[Tn] =  150   ; Tn++ ;
+  Ttypelist[Tn] = TX ; Tvlist[Tn] =  360   ; Tn++ ;
+  Ttypelist[Tn] = TY ; Tvlist[Tn] =  500   ; Tn++ ;
 
-    num_objects++ ; // don't forget to do this        
+  M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
+  M3d_mat_mult(obmat[num_objects], vm, m) ;
+  M3d_mat_mult(obinv[num_objects], mi, vi) ;
 
+  num_objects++ ; // don't forget to do this        
+  //////////////////////////////////////////////////////////////
+  obtype[num_objects] = 1 ; // circle    
+  color[num_objects][0] = 0.5 ;
+  color[num_objects][1] = 1.0 ; 
+  color[num_objects][2] = 1.0 ;
 
-    /*
-    //////////////////////////////////////////////////////////////
-    obtype[num_objects] = 0 ; // line segment
-    color[num_objects][0] = 0.5 ;
-    color[num_objects][1] = 0.5 ; 
-    color[num_objects][2] = 1.0 ;
-	
-    Tn = 0 ;
-    Ttypelist[Tn] = SX ; Tvlist[Tn] =   50   ; Tn++ ;
-    Ttypelist[Tn] = RZ ; Tvlist[Tn] =  110   ; Tn++ ;
-    Ttypelist[Tn] = TX ; Tvlist[Tn] =  300   ; Tn++ ;
-    Ttypelist[Tn] = TY ; Tvlist[Tn] =  300   ; Tn++ ;
-	
-    M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
-    M3d_mat_mult(obmat[num_objects], vm, m) ;
-    M3d_mat_mult(obinv[num_objects], mi, vi) ;
+  Tn = 0 ;
+  Ttypelist[Tn] = SX ; Tvlist[Tn] =  130   ; Tn++ ;
+  Ttypelist[Tn] = SY ; Tvlist[Tn] =   30   ; Tn++ ;
+  Ttypelist[Tn] = RZ ; Tvlist[Tn] =  -15   ; Tn++ ;
+  Ttypelist[Tn] = TX ; Tvlist[Tn] =  100   ; Tn++ ;
+  Ttypelist[Tn] = TY ; Tvlist[Tn] =  700   ; Tn++ ;
 
-    num_objects++ ; // don't forget to do this        
-    //////////////////////////////////////////////////////////////
-    obtype[num_objects] = 2 ; // hyperbola
-    color[num_objects][0] = 0.4 ;
-    color[num_objects][1] = 0.2 ; 
-    color[num_objects][2] = 0.1 ;
-	
-    Tn = 0 ;
-    Ttypelist[Tn] = SX ; Tvlist[Tn] =   15  ; Tn++ ;
-    Ttypelist[Tn] = SY ; Tvlist[Tn] =   80   ; Tn++ ;    
-    Ttypelist[Tn] = RZ ; Tvlist[Tn] =   -7  ; Tn++ ;
-    Ttypelist[Tn] = TX ; Tvlist[Tn] =  200   ; Tn++ ;
-    Ttypelist[Tn] = TY ; Tvlist[Tn] =  630   ; Tn++ ;
-	
-    M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
-    M3d_mat_mult(obmat[num_objects], vm, m) ;
-    M3d_mat_mult(obinv[num_objects], mi, vi) ;
+  M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
+  M3d_mat_mult(obmat[num_objects], vm, m) ;
+  M3d_mat_mult(obinv[num_objects], mi, vi) ;
 
-    num_objects++ ; // don't forget to do this        
-    //////////////////////////////////////////////////////////////    
-    */
-    
+  num_objects++ ; // don't forget to do this        
 
 
-    G_rgb(0,0,0) ;
-    G_clear() ;
+  /*
+  //////////////////////////////////////////////////////////////
+  obtype[num_objects] = 0 ; // line segment
+  color[num_objects][0] = 0.5 ;
+  color[num_objects][1] = 0.5 ; 
+  color[num_objects][2] = 1.0 ;
 
-    Draw_the_scene() ;
-    
-    int key = 0 ;
-    while (key != 'q') {
-      // Creates point at first click
-      double P[2] ;
-      G_wait_click(P) ;
-      G_rgb(1,0,1) ;
-      G_fill_circle(P[0], P[1], 2) ;
-    
-      // Creates point at second click
-      double Q[2] ;
-      G_wait_click(Q) ;
-      G_rgb(1,0,1) ;
-      G_fill_circle(Q[0], Q[1], 2) ;
-    
-      // Defines the points to send to rayThing
-      Rsource[0] = P[0] ; Rsource[1] = P[1] ; Rsource[2] = 0 ;
-      Rtip[0] = Q[0] ; Rtip[1] = Q[1] ; Rtip[2] = 0 ;
-    
-      // Draw the scene
-      Draw_the_scene();
+  Tn = 0 ;
+  Ttypelist[Tn] = SX ; Tvlist[Tn] =   50   ; Tn++ ;
+  Ttypelist[Tn] = RZ ; Tvlist[Tn] =  110   ; Tn++ ;
+  Ttypelist[Tn] = TX ; Tvlist[Tn] =  300   ; Tn++ ;
+  Ttypelist[Tn] = TY ; Tvlist[Tn] =  300   ; Tn++ ;
+
+  M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
+  M3d_mat_mult(obmat[num_objects], vm, m) ;
+  M3d_mat_mult(obinv[num_objects], mi, vi) ;
+
+  num_objects++ ; // don't forget to do this        
+  //////////////////////////////////////////////////////////////
+  obtype[num_objects] = 2 ; // hyperbola
+  color[num_objects][0] = 0.4 ;
+  color[num_objects][1] = 0.2 ; 
+  color[num_objects][2] = 0.1 ;
+
+  Tn = 0 ;
+  Ttypelist[Tn] = SX ; Tvlist[Tn] =   15  ; Tn++ ;
+  Ttypelist[Tn] = SY ; Tvlist[Tn] =   80   ; Tn++ ;    
+  Ttypelist[Tn] = RZ ; Tvlist[Tn] =   -7  ; Tn++ ;
+  Ttypelist[Tn] = TX ; Tvlist[Tn] =  200   ; Tn++ ;
+  Ttypelist[Tn] = TY ; Tvlist[Tn] =  630   ; Tn++ ;
+
+  M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
+  M3d_mat_mult(obmat[num_objects], vm, m) ;
+  M3d_mat_mult(obinv[num_objects], mi, vi) ;
+
+  num_objects++ ; // don't forget to do this        
+  //////////////////////////////////////////////////////////////    
+  */
   
-      // RayTrace thing, takes in two arrays (Still computes for further left on x axis)
-      rayThing(Rsource, Rtip) ;
 
-      // Wait for user input before proceeding to the next ray
-      //G_wait_key();
-      
-      G_rgb(1,1,1) ; G_draw_string("Space to go again, 'c' to clear screen, 'q' to quit", 50,50) ;
-      key = G_wait_key() ;
-      if (key == 'c') {
-      	G_rgb(0,0,0) ;
-				G_clear() ;
-				Draw_the_scene() ;
-      }
+
+  G_rgb(0,0,0) ;
+  G_clear() ;
+
+  Draw_the_scene() ;
+  
+  int key = 0 ;
+  while (key != 'q') {
+    // Creates point at first click
+    double P[2] ;
+    G_wait_click(P) ;
+    G_rgb(1,0,1) ;
+    G_fill_circle(P[0], P[1], 2) ;
+  
+    // Creates point at second click
+    double Q[2] ;
+    G_wait_click(Q) ;
+    G_rgb(1,0,1) ;
+    G_fill_circle(Q[0], Q[1], 2) ;
+  
+    // Defines the points to send to rayThing
+    Rsource[0] = P[0] ; Rsource[1] = P[1] ; Rsource[2] = 0 ;
+    Rtip[0] = Q[0] ; Rtip[1] = Q[1] ; Rtip[2] = 0 ;
+  
+    // Draw the scene
+    Draw_the_scene();
+
+    // RayTrace thing, takes in two arrays (Still computes for further left on x axis)
+    rayThing(Rsource, Rtip) ;
+
+    // Wait for user input before proceeding to the next ray
+    //G_wait_key();
+    
+    G_rgb(1,1,1) ; G_draw_string("Space to go again, 'c' to clear screen, 's' to save, 'q' to quit", 50,50) ;
+    key = G_wait_key() ;
+    
+    // Clears user input in 'c' key pressed
+    if (key == 'c') {
+    	G_rgb(0,0,0) ;
+			G_clear() ;
+			Draw_the_scene() ;
     }
     
-    G_save_image_to_file("2d_Reflect_v2.xwd") ;
+    // Saves as image file if 's' key pressed
+    if (key == 's') {
+    	G_save_image_to_file("junk2.xwd") ;
+    	G_rgb(1,1,1) ; G_draw_string("Image saved as junk2.xwd", 600,750) ;
+    	key = G_wait_key() ;
+    	
+    	// Exit program if 'q' is pressed after saving
+    	if (key == 'q') {
+    		break ;
+    	}
+    	
+    	G_rgb(0,0,0) ;
+			G_clear() ;
+			Draw_the_scene() ;
+    }
+  }
 }
 
 
