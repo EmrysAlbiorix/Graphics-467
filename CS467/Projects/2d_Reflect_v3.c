@@ -288,6 +288,10 @@ int rayThing(double Rsource[], double Rtip[]) {
         continue ;
       }
       
+      // Saves the intersected object
+      tbest = t ;
+      obest = objnum ;
+      
       
     } else if (obtype[objnum] == 1) { // circle
       nn = quadratic_solve(A, B, C, qres) ;
@@ -314,8 +318,12 @@ int rayThing(double Rsource[], double Rtip[]) {
       //t2 = (-B - sqrt((B * B) - 4 * A * C)) / (2 * A) ;
       //t2 = hyper_solve(A, B, C) ;
       
+      printf("Old t1: %lf  Old t2: %lf\n", t1, t2) ;
+      
       nn = quadratic_solve(A, B, C, qres) ;
       t1 = qres[0] ;	t2 = qres[1] ;
+      
+      printf("New t1: %lf  New t2: %lf\n", t1, t2) ;
       
       trunkY1 = RsourceT[1] + (RtipT[1] - RsourceT[1]) * t1 ;
       trunkY2 = RsourceT[1] + (RtipT[1] - RsourceT[1]) * t2 ;
@@ -339,6 +347,10 @@ int rayThing(double Rsource[], double Rtip[]) {
       } else {
         continue ;
       }
+      
+      // Saves the intersected object
+      tbest = t ;
+      obest = objnum ;
       
        
     } else {
