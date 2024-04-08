@@ -1,10 +1,11 @@
 #include "Tools/FPToolkit.c"
 #include "Tools/M3d_matrix_tools.c"
 
-
 double obmat[100][4][4] ;
 double obinv[100][4][4] ;
 double color[100][3] ;
+double refSource[3] ;
+double refTip[3] ;
 int    num_objects ;
 int    obtype[100] ; // 0 line segment, 1 circle, 2 hyperbola
 
@@ -252,6 +253,8 @@ int rayThing(double Rsource[], double Rtip[]) {
   double qres[2] ;
   double tq ;
   
+  //printf("Rsource(%lf, %lf), Rtip(%lf, %lf)\n", Rsource[0], Rsource[1], Rtip[0], Rtip[1]) ;
+  
   // Loops through all objects
   for (int objnum = 0; objnum < num_objects; objnum++) {
     // Transform the ray source and tip into object-local coordinates
@@ -278,7 +281,7 @@ int rayThing(double Rsource[], double Rtip[]) {
     }
 
     // Solve the quadratic equation for finding the intersections of the ray
-    double t = 0, t1 = 0, t2 = 0 ;
+    double t = 1e50, t1 = 0, t2 = 0 ;
     if (obtype[objnum] == 0) { // line
       double line[3] = {RtipT[0] - RsourceT[0], RtipT[1] - RsourceT[1], RtipT[2] - RsourceT[2]} ;
       t = -RsourceT[1]/line[1] ;
@@ -288,9 +291,11 @@ int rayThing(double Rsource[], double Rtip[]) {
         continue ;
       }
       
-      // Saves the intersected object
-      tbest = t ;
-      obest = objnum ;
+      // Saves the intersected object if closer
+      if (t < tbest) {
+        tbest = t ;
+        obest = objnum ;
+      }
       
       
     } else if (obtype[objnum] == 1) { // circle
@@ -312,16 +317,12 @@ int rayThing(double Rsource[], double Rtip[]) {
     } else if (obtype[objnum] == 2) { // hyperbola
       double trunkY1 = 0, trunkY2 = 0 ;
       
-      //t1 = (-B + sqrt((B * B) - 4 * A * C)) / (2 * A) ;
-      //t1 = OLDquadratic_solve(A, B, C) ;
-      
-      //t2 = (-B - sqrt((B * B) - 4 * A * C)) / (2 * A) ;
-      //t2 = hyper_solve(A, B, C) ;
-      
       printf("Old t1: %lf  Old t2: %lf\n", t1, t2) ;
       
-      nn = quadratic_solve(A, B, C, qres) ;
+      nn = quadratic_solve(A, B, C, qres) ;  
       t1 = qres[0] ;	t2 = qres[1] ;
+      
+      //if (!(t1 >= 0.000001) && !(t2 >= 0.000001)) break ;
       
       printf("New t1: %lf  New t2: %lf\n", t1, t2) ;
       
@@ -337,20 +338,25 @@ int rayThing(double Rsource[], double Rtip[]) {
         
       } else if (trunkY1 <= 1 && trunkY1 >= -1 && trunkY2 <= 1 && trunkY2 >= -1) {
         //t = (t1 < t2) ? t1 : t2 ; This is shorthand for the below if-else statement
-        if (t1 < t2) {
-          t = t1;
+        if (t1 < t2 && t1 > 0.0) {
+          t = t1 ;
           
-        } else {
-          t = t2;
-        }
+        } else if (t2 > 0.0) {
+          t = t2 ;
+          
+        } else continue ;
         
       } else {
         continue ;
       }
       
-      // Saves the intersected object
-      tbest = t ;
-      obest = objnum ;
+      printf("New t: %lf  tbesty: %lf\n", t, tbest) ;
+      
+      // Saves the intersected object if closer (&& t > 0) is a temp fix, need to make it better
+      if (t < tbest && t > 0) {
+        tbest = t ;
+        obest = objnum ;
+      }
       
        
     } else {
@@ -359,7 +365,7 @@ int rayThing(double Rsource[], double Rtip[]) {
     
   } // end for loop
 
-  if (obest == - 1) {
+  if (obest == -1) {
 
     ; // Was left empty by Jeff after office hours... no idea what this is for
 
@@ -391,6 +397,7 @@ int rayThing(double Rsource[], double Rtip[]) {
     normal[0] /= len ; normal[1] /= len ;
     
     printf("%lf %lf\n",normal[0],normal[1]) ;
+    G_rgb(0, 0, 1) ; // Normal line (Blue)
     G_line (intersect[0], 						 intersect[1],
 	    			intersect[0]+20*normal[0], intersect[1]+20*normal[1]) ;
 
@@ -401,13 +408,17 @@ int rayThing(double Rsource[], double Rtip[]) {
     incoming[1] = Rtip[1] - Rsource[1] ;    
     
     getReflect (normal, incoming, reflec) ;
+    
+    // Saves the direction from reflection to bounce
+	  refSource[0] = intersect[0]+0.001*reflec[0] ; 	  refTip[0] = intersect[0]+50*reflec[0] ; 
+	  refSource[1] = intersect[1]+0.001*reflec[1] ; 		refTip[1] = intersect[1]+50*reflec[1] ;
+	  refSource[2] = 0 ;	  														refTip[2] = 0 ;
 
-    G_rgb(1,0,0) ;
-    G_line (intersect[0], 						 intersect[1],
-	    			intersect[0]+20*reflec[0], intersect[1]+20*reflec[1]) ;    
+    G_rgb(1,0,0) ; // Reflection line (Red)
+    G_line (refSource[0], refSource[1], refTip[0], refTip[1]) ;
 	    			
-	  G_rgb(color[RGBnum][0], color[RGBnum][1], color[RGBnum][2]) ; // Shape color
-  	G_line(Rsource[0], Rsource[1], Rtip[0], Rtip[1]) ; // User Line
+	  G_rgb(color[RGBnum][0], color[RGBnum][1], color[RGBnum][2]) ; // Color of shape hit
+  	G_line(Rsource[0], Rsource[1], Rtip[0], Rtip[1]) ; // Line between initial clicks
 
   }
 }
@@ -568,7 +579,21 @@ int test01() {
 		Draw_the_scene();
 
 		// RayTrace thing, takes in two arrays (Still computes for further left on x axis)
-		rayThing(Rsource, Rtip) ;
+		for (int i = 0 ; i < 4 ; i++) {
+			printf("Reflection %d\n", i) ;
+			rayThing(Rsource, Rtip) ;
+			printf("\n") ;
+			
+			/*
+			printf("\nRsource(%lf, %lf)\nRtip(%lf, %lf)\n", Rsource[0], Rsource[1], Rtip[0], Rtip[1]) ;
+			printf("\nrefSource(%lf, %lf)\nrefTip(%lf, %lf)\n\n", 
+							refSource[0], refSource[1], refTip[0], refTip[1]) ; */
+				
+			Rsource[0] = refSource[0] ; Rtip[0] = refTip[0] ;
+			Rsource[1] = refSource[1] ; Rtip[1] = refTip[1] ;	
+			
+			//G_wait_key() ;
+		}
 
 		// Wait for user input before proceeding to the next ray
 		//G_wait_key();
@@ -586,7 +611,7 @@ int test01() {
 		// Saves as image file if 's' key pressed
 		if (key == 's') {
 			G_save_image_to_file("2d_Reflect_v3.xwd") ;
-			G_rgb(1,1,1) ; G_draw_string("Image saved as junk2.xwd", 600,750) ;
+			G_rgb(1,1,1) ; G_draw_string("Image saved as 2d_Reflect_v3.xwd", 580,750) ;
 			key = G_wait_key() ;
 			
 			// Exit program if 'q' is pressed after saving
