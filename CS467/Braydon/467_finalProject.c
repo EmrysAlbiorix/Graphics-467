@@ -176,7 +176,7 @@ double dist(double *point) {
 }
 
 
-int idEARTH,idSUN;
+int idEARTH,idSUN,idSTARS;
 void getColor(double u,double v,double uhi,double vhi,double ulo,double vlo,double idA) {
 	double e;
 	int d[2],x,y;
@@ -222,8 +222,8 @@ void plot (double (*f)(double u, double v),
 	H=tan(halfangle*(M_PI/180));
 	pointdist=0;
 	
-	for (u = ulo; u <= uhi ; u+=0.002) {
-    	for(v=vlo; v<= vhi; v+=0.002) {
+	for (u = ulo; u <= uhi ; u+=0.0005) {
+    	for(v=vlo; v<= vhi; v+=0.0005) {
    		point[0]=f(u,v);
    		point[1]=g(u,v);
    		point[2]=l(u,v);
@@ -231,6 +231,8 @@ void plot (double (*f)(double u, double v),
 			getColor(u,v,uhi,vhi,ulo,vlo,idEARTH);
 		} else if(MOVEMENT==SUNobj) {
 			getColor(u,v,uhi,vhi,ulo,vlo,idSUN);
+		} else if(MOVEMENT==STARSobj) {
+			getColor(u,v,uhi,vhi,ulo,vlo,idSTARS);
 		}
 		
    		point2[0]=f(u+0.01,v);
@@ -266,6 +268,8 @@ void plot (double (*f)(double u, double v),
 		}
 		
 		if(pointdist<zbuffer[a][b]) {
+		
+		if(MOVEMENT==STARSobj) {SPECPOW=1000000000;} else {SPECPOW=30;}
 			zbuffer[a][b]=pointdist;
 			light_model (inherent_rgb,point,point2,point3,rgb);
 			G_rgb(rgb[0], rgb[1], rgb[2]);
@@ -396,13 +400,13 @@ int main() {
 	double normal[2],mag;
 
 	
-	light_in_eye_space[0] = -7;
-  light_in_eye_space[1] =  -2;
-  light_in_eye_space[2] =  -10;
+	light_in_eye_space[0] = 1.4;
+  light_in_eye_space[1] =  0.2;
+  light_in_eye_space[2] = -0.7;
   
   AMBIENT = 0.2 ;
   MAX_DIFFUSE = 0.5 ;
-  SPECPOW = 30 ;
+  SPECPOW = 30;
 	
 	//initialize graphics pannel
 	G_init_graphics(800,800);
@@ -438,48 +442,60 @@ int main() {
 	
 	
 	
-	//movement sequence for EARTH.
+	//movement sequence for MERCURY.
 	Tn = 0; 
 	Ttypelist[Tn] = RY ; Tvlist[Tn] =   -80; Tn++;
-  Ttypelist[Tn] = TY ; Tvlist[Tn] =   1; Tn++;
-  Ttypelist[Tn] = TX ; Tvlist[Tn] =   -1; Tn++;
-  Ttypelist[Tn] = TZ ; Tvlist[Tn] =   0; Tn++;
+	Ttypelist[Tn] = SX ; Tvlist[Tn] =   .034; Tn++;
+	Ttypelist[Tn] = SY ; Tvlist[Tn] =   .034; Tn++;
+	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   .034; Tn++;
+  Ttypelist[Tn] = TY ; Tvlist[Tn] =   0; Tn++;
+  Ttypelist[Tn] = TX ; Tvlist[Tn] =   0; Tn++;
+  Ttypelist[Tn] = TZ ; Tvlist[Tn] =   2; Tn++;
 	M3d_make_movement_sequence_matrix(EARTH,EARTHi,Tn,Ttypelist,Tvlist);
 	
 	//movement sequence for SUN.
 	Tn = 0; 
-	Ttypelist[Tn] = TY ; Tvlist[Tn] =   1; Tn++;
+	Ttypelist[Tn] = SX ; Tvlist[Tn] =   2; Tn++;
+	Ttypelist[Tn] = SY ; Tvlist[Tn] =   2; Tn++;
+	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   2; Tn++;
+	Ttypelist[Tn] = TX ; Tvlist[Tn] =   -2; Tn++;
+	
 	M3d_make_movement_sequence_matrix(SUN,SUNi,Tn,Ttypelist,Tvlist);
 	
-	/*//movement sequence for STARS.
+	//movement sequence for STARS.
 	Tn = 0; 
-	Ttypelist[Tn] = SX ; Tvlist[Tn] =   20; Tn++;
-	Ttypelist[Tn] = SY ; Tvlist[Tn] =   20; Tn++;
-	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   20; Tn++;
-	Ttypelist[Tn] = RY ; Tvlist[Tn] =   65; Tn++;
+	Ttypelist[Tn] = SX ; Tvlist[Tn] =   100; Tn++;
+	Ttypelist[Tn] = SY ; Tvlist[Tn] =   100; Tn++;
+	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   100; Tn++;
+	Ttypelist[Tn] = RY ; Tvlist[Tn] =   75; Tn++;
 	
-	M3d_make_movement_sequence_matrix(STARS,STARSi,Tn,Ttypelist,Tvlist);*/
+	M3d_make_movement_sequence_matrix(STARS,STARSi,Tn,Ttypelist,Tvlist);
 	
-	idEARTH = init_xwd_map_from_file ("earthJ.xwd") ;// returns -1 on error, 1 if ok
+	idEARTH = init_xwd_map_from_file ("mercuryB.xwd") ;// returns -1 on error, 1 if ok
   	if (idEARTH == -1) { printf("failure\n") ;  exit(0) ; }
 	
 	idSUN = init_xwd_map_from_file ("sunB.xwd") ;// returns -1 on error, 1 if ok
   	if (idSUN == -1) { printf("failure\n") ;  exit(0) ; }
+  	
+  	idSTARS = init_xwd_map_from_file ("starsB.xwd") ;// returns -1 on error, 1 if ok
+  	if (idSUN == -1) { printf("failure\n") ;  exit(0) ; }
 	
 	//for movie, while less than desired number of frames
 	fnum=0;
-	q=0;
+	q=45;
+	double l=0;
 	int count=0;
 	char filename[100] = "FinalMovie/FinalMovie.xwd";
 	//while(q != 'q') {
-	while (q < 195) { //auto control
+	while (q < 346) { //auto control: 346 for first movie - got to frame 45 start at this point next time
 	  	init_zbuffer();
 
-	  	t = 0.01*fnum;
+	  	t = 0.005*fnum;
+	  	l = 0.0005*fnum;
 
-			eye[0] = 0; 
+			eye[0] = sin(l); 
 			eye[1] = 0; 
-			eye[2] = 5-t; 
+			eye[2] = 3-t; 
 
 		//printf("t = %lf   eye = %lf %lf %lf\n",t, eye[0],eye[1],eye[2]) ;
 
@@ -491,11 +507,15 @@ int main() {
 		up[1]  = eye[1] + 1;
 		up[2]  = eye[2]; 
 		
-		
+		double rotate[4][4],rotatei[4][4];
+		Tn=0;
+		Ttypelist[Tn] = RY ; Tvlist[Tn] =   20; Tn++;
+		M3d_make_movement_sequence_matrix(rotate,rotatei,Tn,Ttypelist,Tvlist);
+		M3d_mat_mult(EARTHobj,  rotate,EARTH);
 
 	  	// move ALL objects from WORLD SPACE into EYE SPACE:  
 	  	M3d_view (E, Ei,eye,coi,up);
-
+		
 	  	M3d_mat_mult(EARTHobj,  E,EARTH);
 	  	M3d_mat_mult(SUNobj,  E,SUN);
 	  	M3d_mat_mult(STARSobj,  E,STARS);
@@ -505,18 +525,19 @@ int main() {
 	  	G_rgb(0,0,0) ; 
 	  	G_clear() ;
 	  
-		//draw EARTH
+		//draw MARS
+		
 		plot(sphere_x,sphere_y,sphere_z,-1*M_PI,M_PI,-1*M_PI/2,M_PI/2,EARTHobj);
 		
 		
 		//draw SUN		
-  	plot(sphere_x,sphere_y,sphere_z,-1*M_PI,M_PI,-1*M_PI/2,M_PI/2,SUNobj);
+  		plot(sphere_x,sphere_y,sphere_z,-1*M_PI,M_PI,-1*M_PI/2,M_PI/2,SUNobj);
   	
-  	//draw STARS
-  	plot(sphere_x,sphere_y,sphere_z,-1*M_PI,M_PI,-1*M_PI/2,M_PI/2,STARSobj);
+  		//draw STARS
+  		plot(sphere_x,sphere_y,sphere_z,-1*M_PI,M_PI,-1*M_PI/2,M_PI/2,STARSobj);
   	
 		
-	  G_display_image();
+	 	G_display_image();
 		usleep(1);
 	
 		//manual control
