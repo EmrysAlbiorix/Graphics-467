@@ -1,5 +1,6 @@
 #include "Tools/FPToolkit.c"
 #include "Tools/M3d_matrix_tools.c"
+#include "../XWDhelp/XWD_TOOLS_03/xwd_tools_03.c"
 
 #define AMBIENT 0.2
 #define MAX_DIFFUSE 0.5
@@ -7,7 +8,7 @@
 
 #define hither 2
 #define yon 100
-#define REF_DEPTH 3 // reflection depth
+#define REF_DEPTH 4 // reflection depth
 #define H 0.57735 //tan(30) half angle
 
 double obmat[100][4][4] ;
@@ -16,18 +17,19 @@ double color[100][3] ;
 int    num_objects ;
 int    obtype[100] ; // 0 line segment, 1 circle, 2 hyperbola
 
-double reflectivity[100] ;
-double light_in_eye_space[3] ;
-double light_in_world_space[3] ;
+double reflectivity[100];
+double light_in_eye_space[3];
+double light_in_world_space[3];
 
-double T ;
-int OB ;
+double ARGB[3];
+
+double T;
+int OB;
 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
-
 
 int Light_Model(double irgb[3], double s[3], double p[3], double n[3], double argb[3]) {
 
@@ -153,22 +155,6 @@ double magnitude(double v[3]) {
 }
 
 
-int plot_pt(double p[3]) {
-
-	double x, y, dist ;
-
-	dist = magnitude(p) ;
-
-	x = (400*p[0])/(p[2]*H) + 400 ;
-	y = (400*p[1])/(p[2]*H) + 400 ;
-
-	G_point(x, y) ;
-
-
-	return 1 ;
-}
-
-
 int find_reflection(double intersection[3], double source[3], double N[3], double R[3]) {
 	// L ray vector in obj space, N normal in obj space, R reflection in obj space
 	// L flipped direction
@@ -199,9 +185,9 @@ int find_reflection(double intersection[3], double source[3], double N[3], doubl
 
 int find_normal(double intersect[3], double normal[3], double M[4][4], int obnum) {
 
-// pass through inverse obj matrix; swap along diagonal /
+	// pass through inverse obj matrix; swap along diagonal /
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
 	if(obtype[obnum] == 1) {
 		// derivative = 2x, 2y
@@ -224,25 +210,54 @@ int find_normal(double intersect[3], double normal[3], double M[4][4], int obnum
 		normal[1] /= mag ;
 		normal[2] /= mag ;
 
-		return 1;
+		return 1 ;
 
 	}
+
+	///////////////////////////////////////////////////////////////////////
+
+	else if(obtype[obnum] == 0) {
+		// derivative = 2x, 2y
+		normal[0] = 2*intersect[0] ;
+		normal[1] = 0 ;
+		normal[2] = 2*intersect[2] ;
+
+
+		double nx = M[0][0]*normal[0] + M[1][0]*normal[1] + M[2][0]*normal[2] ;
+		double ny = M[0][1]*normal[0] + M[1][1]*normal[1] + M[2][1]*normal[2] ;
+		double nz = M[0][2]*normal[0] + M[1][2]*normal[1] + M[2][2]*normal[2] ;
+
+		normal[0] = nx ;
+		normal[1] = ny ;
+		normal[2] = nz ;
+
+		// unit normal
+		double mag = magnitude(normal) ;
+		normal[0] /= mag ;
+		normal[1] /= mag ;
+		normal[2] /= mag ;
+
+		return 1 ;
+
+	}
+
 }
+
 
 
 int find_intersection(double source[3], double tip[3], double intersect[3], int obnum) {
 	// returns 1 if intersection is found; returns 0 if none
 
-	double x0, y0, z0 ;
-	double a, b, c ;
-	double t1, t2, t ;
+	double x0, y0, z0;
+	double a, b, c;
+	double t1, t2, t;
 
-	double point_y1, point_y2, point_x ;
+	double point_y1, point_y2, point_x;
 
 
-	x0 = tip[0] - source[0] ;
-	y0 = tip[1] - source[1] ;
-	z0 = tip[2] - source[2] ;
+	x0 = tip[0] - source[0];
+	y0 = tip[1] - source[1];
+	z0 = tip[2] - source[2];
 
 	////////////////////////////////////////////////////////////////////////////////////
 
@@ -277,25 +292,96 @@ int find_intersection(double source[3], double tip[3], double intersect[3], int 
 
 			if(t < T && t > 0) {
 
-			T = t ;
-			OB = obnum ;
+				T = t ;
+				OB = obnum ;
 
-			//    printf("intersection found\n");
+				//    printf("intersection found\n");
 
-			intersect[0] = source[0] + x0*T ;
-			intersect[1] = source[1] + y0*T ;
-			intersect[2] = source[2] + z0*t ;
+				intersect[0] = source[0] + x0*T ;
+				intersect[1] = source[1] + y0*T ;
+				intersect[2] = source[2] + z0*t ;
 			}
 
 		} // end if/else
 
 	}
 
+	/////////////////////////////////////////////////////////////////////////////////////////
 
-	if (T==100000000) { 
-		return 0 ; 
+
+	else if(obtype[obnum] == 0) {
+
+		double point_y1, point_y2 ;
+		// quadratic equation for t
+		a = x0*x0 + z0*z0 ;
+		b = 2*x0*source[0] + 2*z0*source[2] ;
+		c = source[0]*source[0]+ source[2]*source[2] - 1 ;
+
+
+		// if inside sqrt is negative return 0 (no intersections)
+
+		if(b*b - 4*a*c > 0) {
+
+			//    printf("checking\n");
+
+			//printf("point found\n");
+
+			t1 = (-b + sqrt(b*b - 4*a*c))/(2*a) ;
+			t2 = (-b - sqrt(b*b - 4*a*c))/(2*a) ;
+
+			// smallest t = closest intersection pt
+
+			point_y1 = source[1] + t1*y0 ;
+			point_y2 = source[1] + t2*y0 ;
+
+
+			/* if(point_y1 <= 1 && point_y1 >= -1) {
+			if(point_y2 <= 1 && point_y2 >= -1) {
+			if(t1 <= t2 && t1 > 0)
+			{t = t1;}
+			else if (t2 > 0) {t = t2;}
+			else if (t1 > 0) {t = t1;}
+			}
+			else if (t1 > 0) {
+			t = t1;
+			}
+			}
+
+			else if(point_y2 <= 1 && point_y2 >= -1 && t2 > 0) {
+			t = t2;
+			} */
+
+			if(t1 <= t2) {
+				t = t1 ;
+			} else {
+				t = t2 ;
+			}
+
+			//    printf("t = %lf\n", t);
+
+
+
+
+			if(t < T && t > 0) {
+
+				T = t ;
+				OB = obnum ;
+
+				//    printf("intersection found\n");
+
+				intersect[0] = source[0] + x0*T ;
+				intersect[1] = source[1] + y0*T ;
+				intersect[2] = source[2] + z0*t ;
+			} 
+		} // end if b
+
+	} // end if/else
+
+
+	if (T== 100000000) {
+		return 0 ;
 	} else {
-		return 1; 
+		return 1 ;
 	}
 }
 
@@ -306,24 +392,21 @@ int find_intersection(double source[3], double tip[3], double intersect[3], int 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 
+int test01() {
+	double vm[4][4], vi[4][4] ;
+	double Tvlist[100] ;
+	int Tn, Ttypelist[100] ;
+	double m[4][4], mi[4][4] ;
+	double Rsource[3] ;
+	double Rtip[3] ;
 
+	light_in_eye_space[0] = 5 ;
+	light_in_eye_space[1] = 10 ;
+	light_in_eye_space[2] = -4 ;
 
-int test01()
-{
-	double vm[4][4], vi[4][4];
-	double Tvlist[100];
-	int Tn, Ttypelist[100];
-	double m[4][4], mi[4][4];
-	double Rsource[3];
-	double Rtip[3];
-
-	light_in_eye_space[0] = 0;
-	light_in_eye_space[1] = 0;
-	light_in_eye_space[2] = 0;
-
-	double irgb[100][3];
-	double argb[100][3];
-	double lrgb[100][3];
+	double irgb[100][3] ;
+	double argb[100][3] ;
+	double lrgb[100][3] ;
 
 
 	//////////////////////////////////////////////////////////////////////
@@ -335,10 +418,10 @@ int test01()
 	//////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////
 	// Goal: Make this into a floor plane that is black and 50% reflective (obsidian)
-	
+
 	obtype[num_objects] = 1 ; // sphere
 
-	reflectivity[num_objects] = 0.1 ;
+	reflectivity[num_objects] = 1 ;
 	irgb[num_objects][0] = 0.8;
 	irgb[num_objects][1] = 0.8;
 	irgb[num_objects][2] = 0.8; // light gray
@@ -363,18 +446,18 @@ int test01()
 
 	obtype[num_objects] = 1 ; // sphere
 
-	reflectivity[num_objects] = 0.7 ;
+	reflectivity[num_objects] = 0.5 ;
 	irgb[num_objects][0] = 0.2;
 	irgb[num_objects][1] = 0.4;
-	irgb[num_objects][2] = 1.0; // blue
+	irgb[num_objects][2] = 1.0; // lightish blue
 
 	Tn = 0 ;
 	Ttypelist[Tn] = SX ; Tvlist[Tn] =   0.5   ; Tn++ ;
 	Ttypelist[Tn] = SY ; Tvlist[Tn] =   0.5   ; Tn++ ;
 	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   0.5   ; Tn++ ;
-	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   3   ; Tn++ ;
-	Ttypelist[Tn] = TX ; Tvlist[Tn] =   0   ; Tn++ ;
-	Ttypelist[Tn] = TY ; Tvlist[Tn] =   0   ; Tn++ ;
+	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   3.0   ; Tn++ ;
+	Ttypelist[Tn] = TX ; Tvlist[Tn] =   0.0   ; Tn++ ;
+	Ttypelist[Tn] = TY ; Tvlist[Tn] =   0.0   ; Tn++ ;
 
 	M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
 	M3d_mat_mult(obmat[num_objects], vm, m) ;
@@ -383,7 +466,30 @@ int test01()
 	num_objects++ ; // don't forget to do this
 
 	//////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////
 
+	obtype[num_objects] = 0 ; // cylinder
+
+	reflectivity[num_objects] = 1.0 ;
+	irgb[num_objects][0] = 0.0;
+	irgb[num_objects][1] = 0.0;
+	irgb[num_objects][2] = 0.5; //something
+
+	Tn = 0 ;
+	Ttypelist[Tn] = SX ; Tvlist[Tn] =   0.5   ; Tn++ ;
+	Ttypelist[Tn] = SY ; Tvlist[Tn] =   0.5   ; Tn++ ;
+	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   0.5   ; Tn++ ;
+	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   10.0  ; Tn++ ;
+	Ttypelist[Tn] = TX ; Tvlist[Tn] =   0.0   ; Tn++ ;
+	Ttypelist[Tn] = RZ ; Tvlist[Tn] =  -30.0  ; Tn++ ;
+
+	M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
+	M3d_mat_mult(obmat[num_objects], vm, m) ;
+	M3d_mat_mult(obinv[num_objects], mi, vi) ;
+
+	num_objects++ ; // don't forget to do this
+
+	//////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////
 
 
@@ -391,77 +497,149 @@ int test01()
 	G_clear() ;
 
 	Rsource[0] =  0 ;  Rsource[1] =  0 ;  Rsource[2] = 0 ;
-	Rtip[0] = -H; Rtip[1] = -H; Rtip[2] = 1;
+	Rtip[0] = -H ; Rtip[1] = -H ; Rtip[2] = 1 ;
 
-	int obnum, insct, x, y, i;
-	double Rsource_new[3], Rtip_new[3], intersect[3];
-	double ytip ;
+	int obnum, insct, x, y, i ;
+	double Rsource_new[3], Rtip_new[3], intersect[3] ;
+	double ytip_save, xtip_save  ;
 
-	double normal[3];
-	double reflection[3];
+	ytip_save = Rtip[0] ;
+	xtip_save = Rtip[0] ;
+
+	double normal[3] ;
+	double reflection[3] ;
+
+	int objs_reflected[100] ;
+	int num_intersections ;
+
+	double proj_u, proj_v, u, v ;
+	int id ;
+	int dim[2] ;
+	double width, height ;
+
+
+	id = init_xwd_map_from_file("earthJ.xwd") ;
+	if(id == -1) {
+		printf("failure: can't init map\n") ;
+	}
+	i = get_xwd_map_dimensions(id, dim) ;
+	if(i == -1) {
+		printf("failure: can't dimensions\n") ;
+	}
+	width = dim[0]; height = dim[1] ;
+
 
 	// double for loop moves through each pt of "film"
 
-	for(x = 0; x < 800; x++) {
-		Rtip[0] += H/400 ;
-		Rtip[1] = -H ;
-		for(y = 0; y < 800; y++) {
-			Rtip[1] += H/400 ;
 
-			insct = 1 ;
+	for(x = -400; x < 400; x++) {
+		for(y = -400; y < 400; y++) {
+			Rtip[0] = x*(H/400);
+			Rtip[1] = y*(H/400);
+			Rtip[2] = 1;
 
-			T = 100000000 ;
-			OB = -1 ;
+			Rsource[0] =  0 ;  Rsource[1] =  0 ;  Rsource[2] = 0 ;
 
-			for (obnum = 0; obnum < num_objects; obnum++) {
-				M3d_mat_mult_pt(Rsource_new, obinv[obnum], Rsource) ;
-				M3d_mat_mult_pt(Rtip_new, obinv[obnum], Rtip) ;
+			insct = 1;
+			num_intersections = 0;
 
-				insct = find_intersection(Rsource_new, Rtip_new, intersect, obnum) ;
-				//printf("moving");
+			while (insct == 1 && num_intersections < REF_DEPTH) {
 
+				T = 100000000;
+				OB = -1;
+
+				for (obnum = 0; obnum < num_objects; obnum++) {
+					M3d_mat_mult_pt(Rsource_new, obinv[obnum], Rsource);
+					M3d_mat_mult_pt(Rtip_new, obinv[obnum], Rtip);
+
+					insct = find_intersection(Rsource_new, Rtip_new, intersect, obnum);
+
+				}
+
+				if(OB > -1) {
+
+					// find unit normal in obj space
+					i = find_normal(intersect, normal, obinv[OB], OB);
+
+					// texture mapping on sphere 1
+
+
+					if(OB == 0) {
+						u = 0.5 + (atan2(intersect[2], intersect[0]))/(2*M_PI);
+						v = 0.5 + asin(intersect[1])/M_PI;
+
+						proj_u = u*width;
+						proj_v = v*height;
+
+						i = get_xwd_map_color(id, proj_u, proj_v, irgb[OB]);
+					}
+
+
+					// send intersection to obj space and save it for later
+					M3d_mat_mult_pt(intersect, obmat[OB], intersect);
+
+					objs_reflected[num_intersections] = OB;
+					num_intersections++;
+
+
+					// find unit reflection in obj space
+					i = find_reflection(intersect, Rsource, normal, reflection);
+
+
+					// light model
+					i = Light_Model(irgb[OB], Rsource, intersect, normal, lrgb[OB]);
+
+
+					// make intersection pt the new source; reflection pt the new tip
+					Rsource[0] = intersect[0] + 0.0001 * reflection[0];
+					Rsource[1] = intersect[1] + 0.0001 * reflection[1];
+					Rsource[2] = intersect[2] + 0.0001 * reflection[2];
+					Rtip[0]    = intersect[0] + reflection[0];
+					Rtip[1]    = intersect[1] + reflection[1];
+					Rtip[2]    = intersect[2] + reflection[2];
+
+
+				}
+
+			} // end while
+
+			if(num_intersections > 0) {
+				obnum = objs_reflected[num_intersections - 1];
+				ARGB[0] = lrgb[obnum][0];
+				ARGB[1] = lrgb[obnum][1];
+				ARGB[2] = lrgb[obnum][2];
+
+				for(i = num_intersections - 1; i >= 0; i--){
+					obnum = objs_reflected[i];
+
+					ARGB[0] *= reflectivity[obnum];
+					ARGB[0] += (1 - reflectivity[obnum])*lrgb[obnum][0];
+
+					ARGB[1] *= reflectivity[obnum];
+					ARGB[1] += (1 - reflectivity[obnum])*lrgb[obnum][1];
+
+					ARGB[2] *= reflectivity[obnum];
+					ARGB[2] += (1 - reflectivity[obnum])*lrgb[obnum][2];
+
+				}
+
+
+			} else {
+				ARGB[0] = 0; ARGB[1] = 0; ARGB[2] = 0;
 			}
 
-			if (OB > -1) {
-				//printf("hello\n") ; 
-				// find unit normal in obj space
-				i = find_normal(intersect, normal, obinv[OB], OB) ;
-
-				// send intersection to obj space 
-				M3d_mat_mult_pt(intersect, obmat[OB], intersect) ;
-
-				// light model
-				i = Light_Model(irgb[OB], Rsource, intersect, normal, argb[OB]) ;
+			G_rgb(ARGB[0], ARGB[1], ARGB[2]);
+			G_point(x + 400, y + 400) ;
 
 
-				/*for(i = 0; i < REF_DEPTH; i++) {
-
-				// make intersection pt the new source; reflection pt the new tip
-				i = find_reflection(intersect, Rsource, normal, reflection);
-
-				Rsource[0] = intersect[0] + 0.0001 * reflection[0];
-				Rsource[1] = intersect[1] + 0.0001 * reflection[1];
-				Rsource[2] = intersect[2] + 0.0001 * reflection[2];
-
-				Rtip[0]    = intersect[0] + reflection[0];
-				Rtip[1]    = intersect[1] + reflection[1];
-				Rtip[2]    = intersect[2] + reflection[2];
-
-				} // end for i */
-
-				G_rgb(argb[OB][0], argb[OB][1], argb[OB][2]) ;
-				G_point(x,y) ;
-
-
-
-			} //end if 
 
 		} // end for y
 
 		//      printf("\n") ;
 	} // end for x
 
-	G_wait_key() ;
+
+	G_wait_key();
 }
 
 
@@ -470,8 +648,6 @@ int test01()
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
-
-
 
 
 int main() {
