@@ -9,9 +9,9 @@ double eye[3],coi[3],up[3];
 int np;
 
 //matricies for spheres of different colors
-double EARTH[4][4],VENUS[4][4],MARS[4][4],STARS[4][4];
-double EARTHi[4][4],VENUSi[4][4],MARSi[4][4],STARSi[4][4];
-double EARTHobj[4][4],VENUSobj[4][4],MARSobj[4][4],STARSobj[4][4];
+double MARS[4][4],STARS[4][4];
+double MARSi[4][4],STARSi[4][4];
+double MARSobj[4][4],STARSobj[4][4];
 
 // To support the light model :
 double light_in_eye_space[3] ;
@@ -176,7 +176,7 @@ double dist(double *point) {
 }
 
 
-int idVENUS,idEARTH,idMARS,idSTARS;
+int idMARS,idSTARS;
 void getColor(double u,double v,double uhi,double vhi,double ulo,double vlo,double idA) {
 	double e;
 	int d[2],x,y;
@@ -227,12 +227,8 @@ void plot (double (*f)(double u, double v),
    		point[0]=f(u,v);
    		point[1]=g(u,v);
    		point[2]=l(u,v);
-		if(MOVEMENT==EARTHobj) {
-			getColor(u,v,uhi,vhi,ulo,vlo,idEARTH);
-		} else if(MOVEMENT==MARSobj) {
+		if(MOVEMENT==MARSobj) {
 			getColor(u,v,uhi,vhi,ulo,vlo,idMARS);
-		} else if (MOVEMENT==VENUSobj) {
-			getColor(u,v,uhi,vhi,ulo,vlo,idVENUS);
 		} else if(MOVEMENT==STARSobj) {
 			getColor(u,v,uhi,vhi,ulo,vlo,idSTARS);
 		}
@@ -426,32 +422,11 @@ int main() {
 	
 	double t;
 	int q,fnum;
-		
-	//movement sequence for Venus.
-	Tn = 0; 
-	Ttypelist[Tn] = SX ; Tvlist[Tn] =   .7; Tn++;
-	Ttypelist[Tn] = SY ; Tvlist[Tn] =   .7; Tn++;
-	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   .7; Tn++;
-	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   5; Tn++;
-	Ttypelist[Tn] = RY ; Tvlist[Tn] =  35-0.08*308; Tn++;
-	M3d_make_movement_sequence_matrix(VENUS,VENUSi,Tn,Ttypelist,Tvlist);
 	
-	
-	
-	//movement sequence for Earth.
-	Tn = 0; 
-	Ttypelist[Tn] = SX ; Tvlist[Tn] =   2; Tn++;
-	Ttypelist[Tn] = SY ; Tvlist[Tn] =   2; Tn++;
-	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   2; Tn++;
-	Ttypelist[Tn] = RY ; Tvlist[Tn] =   -5; Tn++;
-	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   15; Tn++;
-  Ttypelist[Tn] = RY ; Tvlist[Tn] =   26-0.07*290; Tn++;
-	M3d_make_movement_sequence_matrix(EARTH,EARTHi,Tn,Ttypelist,Tvlist);
 	
 	//movement sequence for Mars.
 	Tn = 0; 
-	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   20; Tn++;
-	Ttypelist[Tn] = RY ; Tvlist[Tn] =  10-0.03*308; Tn++;
+	Ttypelist[Tn] = RY ; Tvlist[Tn] =  10-0.03*190; Tn++;
 	M3d_make_movement_sequence_matrix(MARS,MARSi,Tn,Ttypelist,Tvlist);
 	
 	//movement sequence for STARS.
@@ -463,12 +438,6 @@ int main() {
 	
 	M3d_make_movement_sequence_matrix(STARS,STARSi,Tn,Ttypelist,Tvlist);
 	
-	idVENUS = init_xwd_map_from_file ("SpaceTextures/venusSurfaceB.xwd") ;// returns -1 on error, 1 if ok
-  	if (idVENUS == -1) { printf("failure\n") ;  exit(0) ; }
-	
-	idEARTH = init_xwd_map_from_file ("SpaceTextures/earthJ.xwd") ;// returns -1 on error, 1 if ok
-  	if (idEARTH == -1) { printf("failure\n") ;  exit(0) ; }
-	
 	idMARS = init_xwd_map_from_file ("SpaceTextures/marsB.xwd") ;// returns -1 on error, 1 if ok
   	if (idMARS == -1) { printf("failure\n") ;  exit(0) ; }
   	
@@ -477,26 +446,26 @@ int main() {
 	
 	//for movie, while less than desired number of frames
 	fnum=0;
-	q=590;
+	q=0;
 	double l=0;
 	int count=0;
 	char filename[100] = "FinalMovie/FinalMovie.xwd";
 	//while(q != 'q') {
-	while (q < 830) { //auto control: 240
+	while (q < 500) { //auto control: 245 frames (590)
 	  	init_zbuffer();
 
-	  	t = 0.005*fnum;
-	  	l = 0.0005*fnum;
+	  	t = 0.05*fnum;
+	  	l = 0.005*fnum;
 
 			eye[0] = 0; 
-			eye[1] = 0; 
-			eye[2] = 0; 
+			eye[1] = 1.25; 
+			eye[2] = 1.5; 
 
 		//printf("t = %lf   eye = %lf %lf %lf\n",t, eye[0],eye[1],eye[2]) ;
 
 		coi[0] =  0;
 		coi[1] =  0; 
-		coi[2] =  30;
+		coi[2] =  0;
 
 		up[0]  = eye[0]; 
 		up[1]  = eye[1] + 1;
@@ -505,41 +474,24 @@ int main() {
 		
 		//orbit animation
 		double rotate[4][4],rotatei[4][4];
-		Tn=0;
-		Ttypelist[Tn] = RY ; Tvlist[Tn] =  -0.08; Tn++;
-		M3d_make_movement_sequence_matrix(rotate,rotatei,Tn,Ttypelist,Tvlist);
-		M3d_mat_mult(VENUS,rotate,VENUS);
 		
 		Tn=0;
-		Ttypelist[Tn] = RY ; Tvlist[Tn] =  -0.06; Tn++;
-		M3d_make_movement_sequence_matrix(rotate,rotatei,Tn,Ttypelist,Tvlist);
-		M3d_mat_mult(EARTH,rotate,EARTH);
-		
-		Tn=0;
-		Ttypelist[Tn] = RY ; Tvlist[Tn] =  -0.03; Tn++;
+		Ttypelist[Tn] = RY ; Tvlist[Tn] =  -.05; Tn++;
 		M3d_make_movement_sequence_matrix(rotate,rotatei,Tn,Ttypelist,Tvlist);
 		M3d_mat_mult(MARS,rotate,MARS);
 
 
 	  // move ALL objects from WORLD SPACE into EYE SPACE:  
 	  M3d_view (E, Ei,eye,coi,up);
-			M3d_mat_mult(VENUSobj,  E,VENUS);
-	  	M3d_mat_mult(EARTHobj,  E,EARTH);
 	  	M3d_mat_mult(MARSobj,  E,MARS);
 	  	M3d_mat_mult(STARSobj,  E,STARS);
 	  	
 	  	
 	  
 	  	G_rgb(0,0,0) ; 
-	  	G_clear() ;
+	  	G_clear();
 	  
-		//draw VENUS
-		plot(sphere_x,sphere_y,sphere_z,-1*M_PI,M_PI,-1*M_PI/2,M_PI/2,VENUSobj);
 		
-		
-		//draw EARTH		
-  	plot(sphere_x,sphere_y,sphere_z,-1*M_PI,M_PI,-1*M_PI/2,M_PI/2,EARTHobj);
-  	
   	//draw MARS	
   	plot(sphere_x,sphere_y,sphere_z,-1*M_PI,M_PI,-1*M_PI/2,M_PI/2,MARSobj);
   	
