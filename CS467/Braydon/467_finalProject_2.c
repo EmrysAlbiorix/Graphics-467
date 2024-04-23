@@ -222,8 +222,8 @@ void plot (double (*f)(double u, double v),
 	H=tan(halfangle*(M_PI/180));
 	pointdist=0;
 	
-	for (u = ulo; u <= uhi ; u+=0.1) {
-    	for(v=vlo; v<= vhi; v+=0.1) {
+	for (u = ulo; u <= uhi ; u+=0.0005) {
+    	for(v=vlo; v<= vhi; v+=0.0005) {
    		point[0]=f(u,v);
    		point[1]=g(u,v);
    		point[2]=l(u,v);
@@ -446,12 +446,12 @@ int main() {
 	
 	//for movie, while less than desired number of frames
 	fnum=0;
-	q=0;
+	q=345;
 	double l=0;
 	int count=0;
 	char filename[100] = "FinalMovie/FinalMovie.xwd";
 	//while(q != 'q') {
-	while (q < 500) { //auto control: 245 frames (590)
+	while (q < 565) { //auto control: 219
 	  	init_zbuffer();
 
 	  	t = 0.05*fnum;
@@ -472,7 +472,7 @@ int main() {
 		up[2]  = eye[2]; 
 		
 		
-		//orbit animation
+		//spin mars
 		double rotate[4][4],rotatei[4][4];
 		
 		Tn=0;

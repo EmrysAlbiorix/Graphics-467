@@ -222,8 +222,8 @@ void plot (double (*f)(double u, double v),
 	H=tan(halfangle*(M_PI/180));
 	pointdist=0;
 	
-	for (u = ulo; u <= uhi ; u+=0.1) {
-    	for(v=vlo; v<= vhi; v+=0.1) {
+	for (u = ulo; u <= uhi ; u+=0.0005) {
+    	for(v=vlo; v<= vhi; v+=0.0005) {
    		point[0]=f(u,v);
    		point[1]=g(u,v);
    		point[2]=l(u,v);
@@ -433,7 +433,7 @@ int main() {
 	Ttypelist[Tn] = SY ; Tvlist[Tn] =   .7; Tn++;
 	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   .7; Tn++;
 	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   5; Tn++;
-	Ttypelist[Tn] = RY ; Tvlist[Tn] =  35-0.08*308; Tn++;
+	Ttypelist[Tn] = RY ; Tvlist[Tn] =  35-0.08*278; Tn++;
 	M3d_make_movement_sequence_matrix(VENUS,VENUSi,Tn,Ttypelist,Tvlist);
 	
 	
@@ -445,13 +445,13 @@ int main() {
 	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   2; Tn++;
 	Ttypelist[Tn] = RY ; Tvlist[Tn] =   -5; Tn++;
 	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   15; Tn++;
-  Ttypelist[Tn] = RY ; Tvlist[Tn] =   26-0.07*290; Tn++;
+  Ttypelist[Tn] = RY ; Tvlist[Tn] =   26-0.07*258; Tn++;
 	M3d_make_movement_sequence_matrix(EARTH,EARTHi,Tn,Ttypelist,Tvlist);
 	
 	//movement sequence for Mars.
 	Tn = 0; 
 	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   20; Tn++;
-	Ttypelist[Tn] = RY ; Tvlist[Tn] =  10-0.03*308; Tn++;
+	Ttypelist[Tn] = RY ; Tvlist[Tn] =  10-0.03*278; Tn++;
 	M3d_make_movement_sequence_matrix(MARS,MARSi,Tn,Ttypelist,Tvlist);
 	
 	//movement sequence for STARS.
@@ -477,12 +477,12 @@ int main() {
 	
 	//for movie, while less than desired number of frames
 	fnum=0;
-	q=590;
+	q=564;
 	double l=0;
 	int count=0;
 	char filename[100] = "FinalMovie/FinalMovie.xwd";
 	//while(q != 'q') {
-	while (q < 830) { //auto control: 240
+	while (q < 796) { //auto control: 250
 	  	init_zbuffer();
 
 	  	t = 0.005*fnum;
