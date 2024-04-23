@@ -1,6 +1,6 @@
-#include "FPToolkit.c"
-#include "M3d_matrix_tools.c"
-#include "xwd_tools_03.c"
+#include "Tools/FPToolkit.c"
+#include "Tools/M3d_matrix_tools.c"
+#include "../XWDhelp/XWD_TOOLS_03/xwd_tools_03.c"
 
 #define AMBIENT 0.2
 #define MAX_DIFFUSE 0.5

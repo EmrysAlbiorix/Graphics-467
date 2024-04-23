@@ -404,12 +404,12 @@ int test01()
 	  M3d_mat_mult_pt(Rtip_new, obinv[obnum], Rtip);
 
 	  insct = find_intersection(Rsource_new, Rtip_new, intersect, obnum);
-	  printf("moving");
+	  //printf("moving");
         
         }
 	    
       	if(OB > -1) {
-	  printf("hello\n") ; 
+	  //printf("hello\n") ; 
 	  // find unit normal in obj space
 	  i = find_normal(intersect, normal, obinv[OB], OB);
 
