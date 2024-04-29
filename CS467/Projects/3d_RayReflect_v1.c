@@ -340,7 +340,7 @@ int find_intersection(double source[3], double tip[3], double intersect[3], int 
 
 	////////////////////////////////////////////////////////////////////////////////////
 
-	if(obtype[obnum] == 1) {
+	if (obtype[obnum] == 1) {
 		// quadratic equation for t
 		a = x0*x0 + y0*y0 + z0*z0 ;
 		b = 2*x0*source[0] + 2*y0*source[1] + 2*z0*source[2] ;
@@ -348,46 +348,32 @@ int find_intersection(double source[3], double tip[3], double intersect[3], int 
 
 
 		// if inside sqrt is negative return 0 (no intersections)
-
-		if(b*b - 4*a*c > 0) {
-
-			//    printf("checking\n");
-
-			//printf("point found\n");
+		if (b*b - 4*a*c > 0) {
 
 			t1 = (-b + sqrt(b*b - 4*a*c))/(2*a) ;
 			t2 = (-b - sqrt(b*b - 4*a*c))/(2*a) ;
 
 			// smallest t = closest intersection pt
-
-			if(t1 <= t2) {
+			if (t1 <= t2) {
 				t = t1 ;
 			} else {
 				t = t2 ;
 			}
 
-			//    printf("t = %lf\n", t);
-
-
-			if(t < T && t > 0) {
+			if (t < T && t > 0) {
 
 				T = t ;
 				OB = obnum ;
-
-				//    printf("intersection found\n");
 
 				intersect[0] = source[0] + x0*T ;
 				intersect[1] = source[1] + y0*T ;
 				intersect[2] = source[2] + z0*t ;
 			}
-
 		} // end if/else
-
 	}
-
+	
 	/////////////////////////////////////////////////////////////////////////////////////////
-
-
+	
 	else if(obtype[obnum] == 0) {
 
 		double point_y1, point_y2 ;
@@ -398,12 +384,7 @@ int find_intersection(double source[3], double tip[3], double intersect[3], int 
 
 
 		// if inside sqrt is negative return 0 (no intersections)
-
-		if(b*b - 4*a*c > 0) {
-
-			//    printf("checking\n");
-
-			//printf("point found\n");
+		if (b*b - 4*a*c > 0) {
 
 			t1 = (-b + sqrt(b*b - 4*a*c))/(2*a) ;
 			t2 = (-b - sqrt(b*b - 4*a*c))/(2*a) ;
@@ -413,40 +394,16 @@ int find_intersection(double source[3], double tip[3], double intersect[3], int 
 			point_y1 = source[1] + t1*y0 ;
 			point_y2 = source[1] + t2*y0 ;
 
-
-			/* if(point_y1 <= 1 && point_y1 >= -1) {
-			if(point_y2 <= 1 && point_y2 >= -1) {
-			if(t1 <= t2 && t1 > 0)
-			{t = t1;}
-			else if (t2 > 0) {t = t2;}
-			else if (t1 > 0) {t = t1;}
-			}
-			else if (t1 > 0) {
-			t = t1;
-			}
-			}
-
-			else if(point_y2 <= 1 && point_y2 >= -1 && t2 > 0) {
-			t = t2;
-			} */
-
 			if(t1 <= t2) {
 				t = t1 ;
 			} else {
 				t = t2 ;
 			}
 
-			//    printf("t = %lf\n", t);
-
-
-
-
 			if(t < T && t > 0) {
 
 				T = t ;
 				OB = obnum ;
-
-				//    printf("intersection found\n");
 
 				intersect[0] = source[0] + x0*T ;
 				intersect[1] = source[1] + y0*T ;
@@ -455,7 +412,6 @@ int find_intersection(double source[3], double tip[3], double intersect[3], int 
 		} // end if b
 
 	} // end if/else
-
 
 	if (T== 100000000) {
 		return 0 ;
@@ -742,8 +698,6 @@ int test01() {
 		key = G_wait_key();
 	}
 }
-
-
 
 
 //////////////////////////////////////////////////////////////////////////////
