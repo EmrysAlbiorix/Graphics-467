@@ -421,7 +421,7 @@ int test01() {
 
 	obtype[num_objects] = 1 ; // sphere
 
-	reflectivity[num_objects] = 0.5 ;
+	reflectivity[num_objects] = 0 ;
 	irgb[num_objects][0] = 0.443;
 	irgb[num_objects][1] = 0.475;
 	irgb[num_objects][2] = 0.494; // steel
@@ -455,7 +455,7 @@ int test01() {
 	Ttypelist[Tn] = SX ; Tvlist[Tn] =   0.5   ; Tn++ ;
 	Ttypelist[Tn] = SY ; Tvlist[Tn] =   0.5   ; Tn++ ;
 	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   0.5   ; Tn++ ;
-	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   3.0   ; Tn++ ;
+	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   4.0   ; Tn++ ;
 	Ttypelist[Tn] = TX ; Tvlist[Tn] =   0.0   ; Tn++ ;
 	Ttypelist[Tn] = TY ; Tvlist[Tn] =   0.0   ; Tn++ ;
 
@@ -471,151 +471,167 @@ int test01() {
 
 	G_rgb(0,0,0) ;
 	G_clear() ;
+	
+	int key = 0 ;
+  while (key != 'q') {
 
-	Rsource[0] =  0 ;  Rsource[1] =  0 ;  Rsource[2] = 0 ;
-	Rtip[0] = -H ; Rtip[1] = -H ; Rtip[2] = 1 ;
+		Rsource[0] =  0 ;  Rsource[1] =  0 ;  Rsource[2] = 0 ;
+		Rtip[0] = -H ; Rtip[1] = -H ; Rtip[2] = 1 ;
 
-	int obnum, insct, x, y, i ;
-	double Rsource_new[3], Rtip_new[3], intersect[3] ;
-	double ytip_save, xtip_save  ;
+		int obnum, insct, x, y, i ;
+		double Rsource_new[3], Rtip_new[3], intersect[3] ;
+		double ytip_save, xtip_save  ;
 
-	ytip_save = Rtip[0] ;
-	xtip_save = Rtip[0] ;
+		ytip_save = Rtip[0] ;
+		xtip_save = Rtip[0] ;
 
-	double normal[3] ;
-	double reflection[3] ;
+		double normal[3] ;
+		double reflection[3] ;
 
-	int objs_reflected[100] ;
-	int num_intersections ;
+		int objs_reflected[100] ;
+		int num_intersections ;
 
-	double proj_u, proj_v, u, v ;
-	int id ;
-	int dim[2] ;
-	double width, height ;
-
-
-	id = init_xwd_map_from_file("../XWDhelp/Change_xwd_styles/clouds.xwd") ;
-	if(id == -1) {
-		printf("failure: can't init map\n") ;
-	}
-	i = get_xwd_map_dimensions(id, dim) ;
-	if(i == -1) {
-		printf("failure: can't dimensions\n") ;
-	}
-	width = dim[0]; height = dim[1] ;
+		double proj_u, proj_v, u, v ;
+		int id ;
+		int dim[2] ;
+		double width, height ;
 
 
-	// double for loop moves through each pt of "film"
+		id = init_xwd_map_from_file("../XWDhelp/Change_xwd_styles/metalJ.xwd") ;
+		if(id == -1) {
+			printf("failure: can't init map\n") ;
+		}
+		i = get_xwd_map_dimensions(id, dim) ;
+		if(i == -1) {
+			printf("failure: can't dimensions\n") ;
+		}
+		width = dim[0]; height = dim[1] ;
 
 
-	for(x = -400; x < 400; x++) {
-		for(y = -400; y < 400; y++) {
-			Rtip[0] = x*(H/400);
-			Rtip[1] = y*(H/400);
-			Rtip[2] = 1;
-
-			Rsource[0] =  0 ;  Rsource[1] =  0 ;  Rsource[2] = 0 ;
-
-			insct = 1;
-			num_intersections = 0;
-
-			while (insct == 1 && num_intersections < REF_DEPTH) {
-
-				T = 100000000;
-				OB = -1;
-
-				for (obnum = 0; obnum < num_objects; obnum++) {
-					M3d_mat_mult_pt(Rsource_new, obinv[obnum], Rsource);
-					M3d_mat_mult_pt(Rtip_new, obinv[obnum], Rtip);
-
-					insct = find_intersection(Rsource_new, Rtip_new, intersect, obnum);
-
-				}
-
-				if(OB > -1) {
-
-					// find unit normal in obj space
-					i = find_normal(intersect, normal, obinv[OB], OB);
-
-					// texture mapping on sphere 1
+		// double for loop moves through each pt of "film"
 
 
-					if(OB == 0) {
-						u = 0.5 + (atan2(intersect[2], intersect[0]))/(2*M_PI);
-						v = 0.5 + asin(intersect[1])/M_PI;
+		for(x = -400; x < 400; x++) {
+			for(y = -400; y < 400; y++) {
+				Rtip[0] = x*(H/400);
+				Rtip[1] = y*(H/400);
+				Rtip[2] = 1;
 
-						proj_u = u*width;
-						proj_v = v*height;
+				Rsource[0] =  0 ;  Rsource[1] =  0 ;  Rsource[2] = 0 ;
 
-						i = get_xwd_map_color(id, proj_u, proj_v, irgb[OB]);
+				insct = 1;
+				num_intersections = 0;
+
+				while (insct == 1 && num_intersections < REF_DEPTH) {
+
+					T = 100000000;
+					OB = -1;
+
+					for (obnum = 0; obnum < num_objects; obnum++) {
+						M3d_mat_mult_pt(Rsource_new, obinv[obnum], Rsource);
+						M3d_mat_mult_pt(Rtip_new, obinv[obnum], Rtip);
+
+						insct = find_intersection(Rsource_new, Rtip_new, intersect, obnum);
+
+					}
+
+					if(OB > -1) {
+
+						// find unit normal in obj space
+						i = find_normal(intersect, normal, obinv[OB], OB);
+
+						// texture mapping on sphere 1 (object 0)
+						if(OB == 0) {
+							u = 0.5 + (atan2(intersect[2], intersect[0]))/(2*M_PI);
+							v = 0.5 + asin(intersect[1])/M_PI;
+
+							proj_u = u*width;
+							proj_v = v*height;
+
+							i = get_xwd_map_color(id, proj_u, proj_v, irgb[OB]);
+						}
+
+
+						// send intersection to obj space and save it for later
+						M3d_mat_mult_pt(intersect, obmat[OB], intersect);
+
+						objs_reflected[num_intersections] = OB;
+						num_intersections++;
+
+
+						// find unit reflection in obj space
+						i = find_reflection(intersect, Rsource, normal, reflection);
+
+
+						// light model
+						i = Light_Model(irgb[OB], Rsource, intersect, normal, lrgb[OB]);
+
+
+						// make intersection pt the new source; reflection pt the new tip
+						Rsource[0] = intersect[0] + 0.0001 * reflection[0];
+						Rsource[1] = intersect[1] + 0.0001 * reflection[1];
+						Rsource[2] = intersect[2] + 0.0001 * reflection[2];
+						Rtip[0]    = intersect[0] + reflection[0];
+						Rtip[1]    = intersect[1] + reflection[1];
+						Rtip[2]    = intersect[2] + reflection[2];
+
+
+					}
+
+				} // end while
+
+				if(num_intersections > 0) {
+					obnum = objs_reflected[num_intersections - 1];
+					ARGB[0] = lrgb[obnum][0];
+					ARGB[1] = lrgb[obnum][1];
+					ARGB[2] = lrgb[obnum][2];
+
+					for(i = num_intersections - 1; i >= 0; i--){
+						obnum = objs_reflected[i];
+
+						ARGB[0] *= reflectivity[obnum];
+						ARGB[0] += (1 - reflectivity[obnum])*lrgb[obnum][0];
+
+						ARGB[1] *= reflectivity[obnum];
+						ARGB[1] += (1 - reflectivity[obnum])*lrgb[obnum][1];
+
+						ARGB[2] *= reflectivity[obnum];
+						ARGB[2] += (1 - reflectivity[obnum])*lrgb[obnum][2];
+
 					}
 
 
-					// send intersection to obj space and save it for later
-					M3d_mat_mult_pt(intersect, obmat[OB], intersect);
-
-					objs_reflected[num_intersections] = OB;
-					num_intersections++;
-
-
-					// find unit reflection in obj space
-					i = find_reflection(intersect, Rsource, normal, reflection);
-
-
-					// light model
-					i = Light_Model(irgb[OB], Rsource, intersect, normal, lrgb[OB]);
-
-
-					// make intersection pt the new source; reflection pt the new tip
-					Rsource[0] = intersect[0] + 0.0001 * reflection[0];
-					Rsource[1] = intersect[1] + 0.0001 * reflection[1];
-					Rsource[2] = intersect[2] + 0.0001 * reflection[2];
-					Rtip[0]    = intersect[0] + reflection[0];
-					Rtip[1]    = intersect[1] + reflection[1];
-					Rtip[2]    = intersect[2] + reflection[2];
-
-
+				} else {
+					ARGB[0] = 0; ARGB[1] = 0; ARGB[2] = 0;
 				}
 
-			} // end while
-
-			if(num_intersections > 0) {
-				obnum = objs_reflected[num_intersections - 1];
-				ARGB[0] = lrgb[obnum][0];
-				ARGB[1] = lrgb[obnum][1];
-				ARGB[2] = lrgb[obnum][2];
-
-				for(i = num_intersections - 1; i >= 0; i--){
-					obnum = objs_reflected[i];
-
-					ARGB[0] *= reflectivity[obnum];
-					ARGB[0] += (1 - reflectivity[obnum])*lrgb[obnum][0];
-
-					ARGB[1] *= reflectivity[obnum];
-					ARGB[1] += (1 - reflectivity[obnum])*lrgb[obnum][1];
-
-					ARGB[2] *= reflectivity[obnum];
-					ARGB[2] += (1 - reflectivity[obnum])*lrgb[obnum][2];
-
-				}
+				G_rgb(ARGB[0], ARGB[1], ARGB[2]);
+				G_point(x + 400, y + 400) ;
 
 
-			} else {
-				ARGB[0] = 0; ARGB[1] = 0; ARGB[2] = 0;
+
+			} // end for y
+
+			//      printf("\n") ;
+		} // end for x
+		
+		G_rgb(1,1,1) ; G_draw_string("'s' to save image, 'q' to quit", 50,50) ;
+		
+		// Saves as image file if 's' key pressed
+		if (key == 's') {
+			G_save_image_to_file("3d_RayReflect_v2.xwd") ;
+			G_rgb(1,1,1) ; G_draw_string("Image saved as 3d_RayReflect_v2.xwd", 580,750) ;
+			key = G_wait_key() ;
+			
+			// Exit program if 'q' is pressed after saving
+			if (key == 'q') {
+				break ;
 			}
+		}
 
-			G_rgb(ARGB[0], ARGB[1], ARGB[2]);
-			G_point(x + 400, y + 400) ;
-
-
-
-		} // end for y
-
-		//      printf("\n") ;
-	} // end for x
-
-
-	G_wait_key();
+		key = G_wait_key();
+	
+	}
 }
 
 
