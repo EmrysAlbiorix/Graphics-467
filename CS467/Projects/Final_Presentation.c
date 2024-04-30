@@ -876,8 +876,8 @@ int test01() {
 		
 		// Saves as image file if 's' key pressed
 		if (key == 's') {
-			G_save_image_to_file("3d_RayReflectAI.xwd") ;
-			G_rgb(1,1,1) ; G_draw_string("Image saved as 3d_RayReflectAI.xwd", 580,750) ;
+			G_save_image_to_file("Final_Presentation.xwd") ;
+			G_rgb(1,1,1) ; G_draw_string("Image saved as Final_Presentation.xwd", 560,750) ;
 			key = G_wait_key() ;
 			
 			// Exit program if 'q' is pressed after saving

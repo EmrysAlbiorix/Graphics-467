@@ -474,6 +474,35 @@ int test01() {
 	M3d_mat_mult(obinv[num_objects], mi, vi) ;
 
 	num_objects++ ; // don't forget to do this
+	
+	//////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////
+	// Goal: Window Frame
+
+	obtype[num_objects] = 0 ; // cylinder
+
+	reflectivity[num_objects] = 0 ; // 100% reflective
+	transparency[num_objects] = 0; // 0% transparency
+	refractive_index[num_objects] = 0 ; // Water
+	
+	irgb[num_objects][0] = 0.5;
+	irgb[num_objects][1] = 0.0;
+	irgb[num_objects][2] = 0.0; //red
+
+	Tn = 0 ;
+	Ttypelist[Tn] = SX ; Tvlist[Tn] =   0.1   ; Tn++ ;
+	Ttypelist[Tn] = SY ; Tvlist[Tn] =   0.1   ; Tn++ ;
+	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   0.1   ; Tn++ ;
+	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   2.0   ; Tn++ ;
+	Ttypelist[Tn] = TX ; Tvlist[Tn] =   0.0   ; Tn++ ;
+	Ttypelist[Tn] = TY ; Tvlist[Tn] =		1.0		; Tn++ ;
+	Ttypelist[Tn] = RZ ; Tvlist[Tn] =   90.0   ; Tn++ ;
+
+	M3d_make_movement_sequence_matrix(m, mi, Tn, Ttypelist, Tvlist);
+	M3d_mat_mult(obmat[num_objects], vm, m) ;
+	M3d_mat_mult(obinv[num_objects], mi, vi) ;
+
+	num_objects++ ; // don't forget to do this
 
 	//////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////
@@ -483,17 +512,17 @@ int test01() {
 
 	reflectivity[num_objects] = 0 ; // 0% Reflective
 	transparency[num_objects] = 0.8 ; // 80% transparency
-	refractive_index[num_objects] = 1.33 ; // Water
+	refractive_index[num_objects] = 0.5 ; // Water
 	
 	irgb[num_objects][0] = 0.400;
 	irgb[num_objects][1] = 0.730;
 	irgb[num_objects][2] = 0.977; // lightish blue
 
 	Tn = 0 ;
-	Ttypelist[Tn] = SX ; Tvlist[Tn] =   0.5   ; Tn++ ;
-	Ttypelist[Tn] = SY ; Tvlist[Tn] =   0.5   ; Tn++ ;
-	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   0.5   ; Tn++ ;
-	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   3.0   ; Tn++ ;
+	Ttypelist[Tn] = SX ; Tvlist[Tn] =   0.2   ; Tn++ ;
+	Ttypelist[Tn] = SY ; Tvlist[Tn] =   0.2   ; Tn++ ;
+	Ttypelist[Tn] = SZ ; Tvlist[Tn] =   0.2   ; Tn++ ;
+	Ttypelist[Tn] = TZ ; Tvlist[Tn] =   1.0   ; Tn++ ;
 	Ttypelist[Tn] = TX ; Tvlist[Tn] =   0.0   ; Tn++ ;
 	Ttypelist[Tn] = TY ; Tvlist[Tn] =   0.0   ; Tn++ ;
 
