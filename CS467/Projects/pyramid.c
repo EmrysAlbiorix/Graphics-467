@@ -4,6 +4,8 @@
 #include "Tools/FPToolkit.c"
 #include "Tools/M3d_matrix_tools.c"
 
+#define S_WIDTH 1600
+#define S_HEIGHT 1600
 
 int window_width, window_height, window_square_size ;
 double Half_window_size ;
@@ -260,7 +262,7 @@ void draw_all_objects()
 
         size = psize[onum][pnum] ;
 
-	sumx = sumy = sumz = 0.0 ;
+				sumx = sumy = sumz = 0.0 ;
         for (j = 0 ; j < size ; j++) {
           d = con[onum][pnum][j] ;
 
@@ -269,13 +271,13 @@ void draw_all_objects()
           sumz += z[onum][d] ;
 
         }
-	sumx /= size ;
-	sumy /= size ;
-	sumz /= size ;
-	polyinfo[TotalPolys].onum = onum ;
-	polyinfo[TotalPolys].pnum = pnum ;
-	polyinfo[TotalPolys].dist = sqrt(sumx*sumx + sumy*sumy + sumz*sumz) ;
-	TotalPolys++ ;
+				sumx /= size ;
+				sumy /= size ;
+				sumz /= size ;
+				polyinfo[TotalPolys].onum = onum ;
+				polyinfo[TotalPolys].pnum = pnum ;
+				polyinfo[TotalPolys].dist = sqrt(sumx*sumx + sumy*sumy + sumz*sumz) ;
+				TotalPolys++ ;
 
       } // end for pnum
 
@@ -295,30 +297,30 @@ void draw_all_objects()
     onum = polyinfo[k].onum ;
     pnum = polyinfo[k].pnum ;
 
-        size = psize[onum][pnum] ;
+    size = psize[onum][pnum] ;
 
-        for (j = 0 ; j < size ; j++) {
-          d = con[onum][pnum][j] ;
+    for (j = 0 ; j < size ; j++) {
+      d = con[onum][pnum][j] ;
 
-          xx[j] = x[onum][d] ;
-          yy[j] = y[onum][d] ;
-          zz[j] = z[onum][d] ;
+      xx[j] = x[onum][d] ;
+      yy[j] = y[onum][d] ;
+      zz[j] = z[onum][d] ;
 
-          xp[j] = a*(xx[j]/zz[j]) + b ;
-          yp[j] = a*(yy[j]/zz[j]) + c ;
-        }
+      xp[j] = a*(xx[j]/zz[j]) + b ;
+      yp[j] = a*(yy[j]/zz[j]) + c ;
+    }
 
 
-        light_model (inherent_rgb[onum], xx,yy,zz, rgb) ;
+    light_model (inherent_rgb[onum], xx,yy,zz, rgb) ;
 
-	G_rgb(rgb[0], rgb[1], rgb[2]) ;
-	// printf("%lf %lf %lf\n",
-	// inherent_rgb[onum][0],inherent_rgb[onum][2],inherent_rgb[onum][2]) ;
-        // printf("%lf %lf %lf\n",rgb[0],rgb[1],rgb[2]) ;
+		G_rgb(rgb[0], rgb[1], rgb[2]) ;
+		// printf("%lf %lf %lf\n",
+		// inherent_rgb[onum][0],inherent_rgb[onum][2],inherent_rgb[onum][2]) ;
+    // printf("%lf %lf %lf\n",rgb[0],rgb[1],rgb[2]) ;
 
-        G_fill_polygon(xp,yp,size) ;
-	G_rgb(0,0,0) ;
-	// G_polygon(xp,yp,size) ;
+    G_fill_polygon(xp,yp,size) ;
+		G_rgb(0,0,0) ;
+		// G_polygon(xp,yp,size) ;
 
   }
 
@@ -341,7 +343,7 @@ int main ()
 
 
 
-  window_width = 600 ; window_height = 600 ;
+  window_width = S_WIDTH ; window_height = S_HEIGHT ;
   // size of largest square INside window
   if (window_width < window_height) { window_square_size = window_width ; }
                                else { window_square_size = window_height ; }
